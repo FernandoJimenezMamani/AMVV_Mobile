@@ -1,21 +1,24 @@
-import React, { useState } from 'react'; 
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
-import { useSession } from '../../context/SessionProvider'; // Importar el contexto de sesión
-import { useRouter } from 'expo-router'; 
+import { useSession } from '../../context/SessionProvider';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import logo from '../../assets/logo.png';
 import styles from '../../styles/login'
-import logo from '../../assets/logo.png'; 
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const InicioDeSesion = () => {
   const [formData, setFormData] = useState({
     correo: '',
-    contraseña: ''
+    contraseña: '',
   });
-  const { login } = useSession(); // Obtener la función login desde el contexto
-  const router = useRouter(); // Para la navegación
+  const [roles, setRoles] = useState([]);
+  const [selectedRoleId, setSelectedRoleId] = useState('');
+  const { login } = useSession();
+  const router = useRouter();
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -24,64 +27,110 @@ const InicioDeSesion = () => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/sesion/login`, formData);
+      console.log('Respuesta del backend:', response.data);
 
-      // Verifica que la respuesta contiene los datos esperados
-      const { token } = response.data;
+      const { requireRoleSelection, roles, token, user } = response.data;
 
-      // Llamar a la función login del contexto
-      login({ token });
-      
-      // Navegar al dashboard después de un login exitoso
-      router.push('/hamburgerAdmin');
+      if (requireRoleSelection) {
+        setRoles(roles); // Actualiza el estado para mostrar los roles
+      } else {
+        login({ user, token }); // Inicia sesión directamente si no hay selección de rol
+        router.push('/hamburgerAdmin');
+      }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-      Alert.alert('Error', 'Correo o contraseña incorrectos');
+      if (error.response && error.response.status === 401) {
+        Alert.alert('Error', 'Correo o contraseña incorrectos');
+      } else {
+        Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
+      }
+    }
+  };
+
+  const handleRoleSelection = async () => {
+    if (!selectedRoleId) {
+      Alert.alert('Advertencia', 'Seleccione un rol para continuar');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/sesion/login`,
+        { ...formData, selectedRoleId },
+        { withCredentials: true }
+      );
+
+      const { token, user } = response.data;
+      login({ user, token });
+      router.push('/hamburgerAdmin');
+    } catch (error) {
+      console.error('Error al procesar el rol seleccionado:', error);
+      Alert.alert('Error', 'Ocurrió un error al procesar su rol');
     }
   };
 
   return (
-    <LinearGradient
-      colors={['#64848C', '#1B2426']} 
-      style={styles.container}
-    >
+    <LinearGradient colors={['#64848C', '#1B2426']} style={styles.container}>
       <View style={styles.loginBox}>
         <Image source={logo} style={styles.logo} />
         <Text style={styles.title}>INICIO DE SESIÓN</Text>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre de usuario o correo"
-            value={formData.correo}
-            onChangeText={(value) => handleChange('correo', value)}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={formData.contraseña}
-            onChangeText={(value) => handleChange('contraseña', value)}
-            secureTextEntry
-          />
-        </View>
-        <TouchableOpacity onPress={() => { /* Implementa lógica de recuperación de contraseña */ }}>
-          <Text style={styles.forgotPassword}>¿Olvidó su contraseña?</Text>
-        </TouchableOpacity>
-        
-        {/* Botón con gradiente */}
-        <TouchableOpacity onPress={handleSubmit} style={styles.buttonContainer}>
-          <LinearGradient
-            colors={['#143E43', '#1E6770']} // Gradiente en el botón
-            start={{ x: 0, y: 0 }} // Comienza desde la izquierda
-            end={{ x: 1, y: 0 }}   // Termina en la derecha (to right)
-            style={styles.loginButton}
-          >
-            <Text style={styles.loginButtonText}>Iniciar sesión</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        
+        {roles.length > 0 ? (
+          <View style={styles.roleSelectionContainer}>
+            <Text style={styles.roleSelectionTitle}>Seleccione un rol</Text>
+            <Picker
+              selectedValue={selectedRoleId}
+              style={styles.roleSelect}
+              onValueChange={(itemValue) => setSelectedRoleId(itemValue)}
+            >
+              <Picker.Item label="-- Seleccione un rol --" value="" />
+              {roles.map((role) => (
+                <Picker.Item key={role.id} label={role.nombre} value={role.id} />
+              ))}
+            </Picker>
+            <TouchableOpacity onPress={handleRoleSelection} style={styles.buttonContainer}>
+              <LinearGradient
+                colors={['#143E43', '#1E6770']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.loginButton}
+              >
+                <Text style={styles.loginButtonText}>Continuar</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre de usuario o correo"
+                value={formData.correo}
+                onChangeText={(value) => handleChange('correo', value)}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña"
+                value={formData.contraseña}
+                onChangeText={(value) => handleChange('contraseña', value)}
+                secureTextEntry
+              />
+            </View>
+            <TouchableOpacity onPress={handleSubmit} style={styles.buttonContainer}>
+              <LinearGradient
+                colors={['#143E43', '#1E6770']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.loginButton}
+              >
+                <Text style={styles.loginButtonText}>Iniciar sesión</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </LinearGradient>
   );

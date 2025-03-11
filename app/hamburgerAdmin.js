@@ -1,34 +1,19 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import { useRouter } from 'expo-router'; 
-import { useSession } from '../context/SessionProvider';
-import logo from '../assets/logo.png';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const HamburgerAdmin = ({ children }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
-  const { user, logout } = useSession(); 
   const router = useRouter();
 
   const toggleMenu = () => setMenuVisible(!menuVisible);
   const toggleSection = (section) => setExpandedSection(expandedSection === section ? null : section);
 
-  const hasRole = (...roles) => {
-    return user && user.roles && roles.some(role => user.roles.includes(role));
-  };
-
-  const navigateToPartidos = () => router.push('/partidos');
-  const navigateToIndiceCampeonato = () => router.push('/campeonato');
-  const navigateToLogin = () => router.push('/auth');
-
   return (
     <View style={styles.container}>
+      {/* Barra de navegación superior */}
       <View style={styles.navbar}>
-        <View style={styles.logoContainer}>
-          <Image source={logo} style={styles.logo} />
-          <Text style={styles.brand}>A.M.V.V</Text>
-        </View>
-
         <TouchableOpacity style={styles.hamburger} onPress={toggleMenu}>
           <View style={styles.bar} />
           <View style={styles.bar} />
@@ -36,49 +21,80 @@ const HamburgerAdmin = ({ children }) => {
         </TouchableOpacity>
       </View>
 
+      {/* Menú desplegable */}
       {menuVisible && (
         <View style={styles.menu}>
-          <TouchableOpacity onPress={navigateToPartidos}>
-            <Text style={styles.link}>Partidos</Text>
+          <TouchableOpacity onPress={() => router.push('/partidos')}>
+            <Text style={styles.link}>Inicio</Text>
           </TouchableOpacity>
 
-          {hasRole('Presidente') && (
-            <View style={styles.menuItem}>
-              <TouchableOpacity onPress={() => toggleSection('campeonatos')}>
-                <Text style={styles.mainLink}>Campeonatos</Text>
-              </TouchableOpacity>
-              {expandedSection === 'campeonatos' && (
-                <View style={styles.subMenu}>
-                  <TouchableOpacity onPress={navigateToIndiceCampeonato}>
-                    <Text style={styles.subMenuItem}>Indice</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
-
-          <View style={styles.searchContainer}>
-            <TextInput
-              placeholder="Buscar..."
-              style={styles.searchInput}
-              placeholderTextColor="#ccc"
-            />
+          <View style={styles.menuItem}>
+            <TouchableOpacity onPress={() => toggleSection('campeonatos')}>
+              <Text style={styles.mainLink}>Asociación</Text>
+            </TouchableOpacity>
+            {expandedSection === 'campeonatos' && (
+              <View style={styles.subMenu}>
+                <TouchableOpacity onPress={() => router.push('/campeonato')}>
+                  <Text style={styles.subMenuItem}>Campeonatos</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/club')}>
+                  <Text style={styles.subMenuItem}>Clubes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/categoria')}>
+                  <Text style={styles.subMenuItem}>Categorias</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-
-          <TouchableOpacity onPress={logout}>
-            <Text style={styles.link}>Cerrar sesión</Text>
-          </TouchableOpacity>
+          <View style={styles.menuItem}>
+            <TouchableOpacity onPress={() => toggleSection('miembros')}>
+              <Text style={styles.mainLink}>Miembros</Text>
+            </TouchableOpacity>
+            {expandedSection === 'miembros' && (
+              <View style={styles.subMenu}>
+                <TouchableOpacity onPress={() => router.push('/arbitro')}>
+                  <Text style={styles.subMenuItem}>Arbitros</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/jugador')}>
+                  <Text style={styles.subMenuItem}>Jugadores</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/presidente_club')}>
+                  <Text style={styles.subMenuItem}>Presidentes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/delegado_club')}>
+                  <Text style={styles.subMenuItem}>Delegados</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+          <View style={styles.menuItem}>
+            <TouchableOpacity onPress={() => toggleSection('traspasos')}>
+              <Text style={styles.mainLink}>Traspasos</Text>
+            </TouchableOpacity>
+            {expandedSection === 'traspasos' && (
+              <View style={styles.subMenu}>
+                <TouchableOpacity onPress={() => router.push('/traspaso/index_jugador_traspaso')}>
+                  <Text style={styles.subMenuItem}>Fichar Jugadores</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/traspaso')}>
+                  <Text style={styles.subMenuItem}>Ver Solicitudes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/traspaso')}>
+                  <Text style={styles.subMenuItem}>Ver Solicitudes P</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
+      {/* Contenido principal */}
       <View style={styles.content}>
         {children}
       </View>
     </View>
   );
 };
-
-export default HamburgerAdmin;
 
 const styles = StyleSheet.create({
   container: {
@@ -92,20 +108,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#64848C',
     paddingHorizontal: 10,
     paddingVertical: 15,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  brand: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
   },
   hamburger: {
     padding: 10,
@@ -145,17 +147,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     paddingVertical: 5,
   },
-  searchContainer: {
-    marginVertical: 10,
-  },
-  searchInput: {
-    backgroundColor: '#2c3e50',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    color: '#fff',
-  },
   content: {
     flex: 1,
     padding: 20,
   },
 });
+
+export default HamburgerAdmin;
