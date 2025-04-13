@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, Alert } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
-import ConfirmModal from '../../components/confirm_modal';
+import { useRouter } from 'expo-router';
+import ConfirmModal from '../../../components/confirm_modal';
 import { Picker } from '@react-native-picker/picker';
-import { MaterialIcons } from '@expo/vector-icons'; // Importa los íconos
-import styles from '../../styles/index_tabla';
+import { MaterialIcons } from '@expo/vector-icons';
+import styles from '../../../styles/index_tabla';
+import { useSession } from '../../../context/SessionProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import PerfilJugador from '../../jugador/perfil/[id]'; // Importa el componente PerfilJugador
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaJugadoresTraspaso = () => {
   const [jugadores, setJugadores] = useState([]);
-  const [presidente, setPresidente] = useState([]);
+  const [presidente, setPresidente] = useState({
+    club_presidente: null,
+    id_presidente: null
+  });
   const [filteredPersonas, setFilteredPersonas] = useState([]);
   const [showConfirmTraspaso, setShowConfirmTraspaso] = useState(false);
   const [jugadorToFichar, setJugadorToFichar] = useState(null);
   const [filterState, setFilterState] = useState('No filtrar');
   const [searchName, setSearchName] = useState('');
-  const navigation = useNavigation();
+  const [selectedJugadorId, setSelectedJugadorId] = useState(null); // Estado para el jugador seleccionado
+  const [isPerfilModalOpen, setIsPerfilModalOpen] = useState(false); // Estado para controlar el modal
+  const router = useRouter();
+  const { activeRole } = useSession();
 
   useEffect(() => {
     fetchPresidente();
@@ -35,8 +44,18 @@ const ListaJugadoresTraspaso = () => {
 
   const fetchPresidente = async () => {
     try {
-      const user = JSON.parse(sessionStorage.getItem('user')); // Convierte el JSON a objeto
+      const userString = await AsyncStorage.getItem('user');
+      if (!userString) {
+        throw new Error('No se encontró el usuario en AsyncStorage');
+      }
+
+      const user = JSON.parse(userString);
       const userId = user?.id;
+
+      if (!userId) {
+        throw new Error('El usuario no tiene un ID válido');
+      }
+
       const response = await axios.get(`${API_BASE_URL}/presidente_club/get_presidenteById/${userId}`);
       console.log("presidente recibidos:", response.data);
       setPresidente(response.data);
@@ -51,8 +70,8 @@ const ListaJugadoresTraspaso = () => {
       const requestBody = {
         club_presidente: presidente.club_presidente,
         idTraspasoPresidente: presidente.id_presidente,
+        role: activeRole?.id,
       };
-      console.log(requestBody, 'ids');
 
       const response = await axios.post(`${API_BASE_URL}/jugador/intercambio`, requestBody, {
         headers: {
@@ -68,17 +87,24 @@ const ListaJugadoresTraspaso = () => {
     }
   };
 
+  const getImagenPerfil = (jugador) => {
+    if (jugador.imagen_persona) {
+      return { uri: jugador.imagen_persona };
+    }
+    return jugador.persona_genero === 'V' 
+      ? require('../../../assets/img/Default_Imagen_Men.webp')
+      : require('../../../assets/img/Default_Imagen_Women.webp');
+  };
+
   const applyFilters = () => {
     let filtered = [...jugadores];
 
-    // Filtrar por estado
     if (filterState !== 'No filtrar') {
       filtered = filtered.filter((jugador) =>
         filterState === 'Activo' ? jugador.eliminado === 'N' : jugador.eliminado === 'S'
       );
     }
 
-    // Filtrar por nombre
     if (searchName) {
       filtered = filtered.filter((jugador) =>
         `${jugador.nombre_persona} ${jugador.apellido_persona}`
@@ -90,17 +116,19 @@ const ListaJugadoresTraspaso = () => {
     setFilteredPersonas(filtered);
   };
 
-  const handleProfileClick = (jugadorId) => {
-    navigation.navigate('Perfil', { id: jugadorId });
+  const handleProfileClick = (jugador) => {
+    setSelectedJugadorId(jugador.jugador_id); // Usa jugador_id en lugar de persona_id
+     setIsPerfilModalOpen(true);
   };
 
   const handleSolicitudesClick = () => {
-    navigation.navigate('MisSolicitudes');
+    router.push(`/traspaso/mis_solicitudes`);
   };
 
   const handleFicharClick = (jugadorId) => {
     setJugadorToFichar(jugadores.find((jugador) => jugador.jugador_id === jugadorId));
     setShowConfirmTraspaso(true);
+    
   };
 
   const handleConfirmFichar = async () => {
@@ -159,9 +187,9 @@ const ListaJugadoresTraspaso = () => {
       </View>
 
       {filteredPersonas.map((jugador) => (
-        <View key={jugador.jugador_id} style={styles.clubContainer}>
+  <View key={jugador.jugador_id} style={styles.clubContainer}>
           <Image
-            source={{ uri: jugador.imagen_persona }}
+            source={getImagenPerfil(jugador)}
             style={styles.clubImage}
           />
           <View style={styles.clubInfo}>
@@ -176,13 +204,14 @@ const ListaJugadoresTraspaso = () => {
             </Text>
           </View>
           <View style={styles.actions}>
-            <TouchableOpacity
+          <TouchableOpacity
               style={{ marginRight: 8 }}
-              onPress={() => handleProfileClick(jugador.id)}
+              onPress={() => handleProfileClick(jugador)} // Pasa el objeto completo
               disabled={jugador.eliminado === 'S'}
             >
               <MaterialIcons name="remove-red-eye" size={24} color="black" />
             </TouchableOpacity>
+
             <TouchableOpacity onPress={() => handleFicharClick(jugador.jugador_id)}>
               <MaterialIcons name="assignment-ind" size={24} color="black" />
             </TouchableOpacity>
@@ -195,6 +224,16 @@ const ListaJugadoresTraspaso = () => {
         onConfirm={handleConfirmFichar}
         onCancel={handleCancelFichar}
         message="¿Seguro que quieres fichar a este jugador?"
+      />
+
+      {/* Modal del perfil del jugador */}
+      <PerfilJugador
+        isOpen={isPerfilModalOpen}
+        onClose={() => {
+          setIsPerfilModalOpen(false);
+          setSelectedJugadorId(null);
+        }}
+        id={selectedJugadorId}
       />
     </ScrollView>
   );

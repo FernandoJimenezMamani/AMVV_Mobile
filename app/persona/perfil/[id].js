@@ -1,43 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import axios from 'axios';
+import { 
+  View, 
+  Text, 
+  Image, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  ActivityIndicator,
+  Alert
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSession } from '../../../context/SessionProvider';
 import defaultUserMenIcon from '../../../assets/img/Default_Imagen_Men.webp';
 import defaultUserWomenIcon from '../../../assets/img/Default_Imagen_Women.webp';
-import { MaterialIcons } from '@expo/vector-icons';
 import ChangePasswordModal from '../../cambiar_contraseña';
 import EditarPerfilPersona from '../editar_perfil';
+import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PerfilJugador = () => {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const [jugador, setJugador] = useState(null);
   const { user, logout } = useSession();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchJugador = async () => {
       try {
+        if (!id) {
+          console.warn('No se recibió un ID');
+          router.back();
+          return;
+        }
+        
+        setLoading(true);
         const response = await axios.get(`${API_BASE_URL}/persona/get_personaById/${id}`);
         setJugador(response.data);
       } catch (error) {
         Alert.alert('Error', 'No se pudo obtener los datos del jugador');
-        console.error('Error al obtener los datos del jugador:', error);
+        console.error('Error:', error);
+        router.back();
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchJugador();
   }, [id]);
 
-  if (!jugador) {
-    return <Text>Cargando...</Text>;
-  }
-
   const calcularEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return 'N/A';
     const hoy = new Date();
     const fechaNac = new Date(fechaNacimiento);
     let edad = hoy.getFullYear() - fechaNac.getFullYear();
@@ -45,100 +62,150 @@ const PerfilJugador = () => {
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
       edad--;
     }
-    return edad;
+    return `${edad} años`;
+  };
+
+  const getImagenPerfil = () => {
+    if (!jugador) return defaultUserMenIcon;
+    if (jugador.persona_imagen) {
+      return { uri: jugador.persona_imagen };
+    }
+    return jugador.genero === 'V' ? defaultUserMenIcon : defaultUserWomenIcon;
+  };
+
+  const getGeneroTexto = () => {
+    if (!jugador) return 'N/A';
+    return jugador.genero === 'V' ? 'Varón' : 'Mujer';
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/');
+  };
+
+  const handleBack = () => {
+    router.back();
   };
 
   const handleEditProfile = () => {
     setIsEditModalOpen(true);
   };
 
-  const getImagenPerfil = (persona) => {
-    if (persona.persona_imagen) {
-      return { uri: persona.persona_imagen };
-    }
-    return persona.genero === 'V' ? defaultUserMenIcon : defaultUserWomenIcon;
-  };
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3D8FA4" />
+      </View>
+    );
+  }
 
-  const ConvertGenero = () => {
-    if (jugador.genero === 'V') {
-      return 'Varón';
-    } else {
-      return 'Mujer';
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
+  if (!jugador) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>No se pudo cargar el perfil</Text>
+        <TouchableOpacity onPress={handleBack} style={styles.closeButton}>
+          <Text style={styles.closeButtonText}>Volver</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <ChangePasswordModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+      
       <EditarPerfilPersona
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         personaId={jugador.id}
-        onPersonaUpdated={() => {
+        onPersonaUpdated={(updatedPersona) => {
           setIsEditModalOpen(false);
-          const fetchJugador = async () => {
-            try {
-              const response = await axios.get(`${API_BASE_URL}/persona/get_personaById/${id}`);
-              setJugador(response.data);
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo obtener los datos del jugador');
-              console.error('Error al obtener los datos del jugador:', error);
-            }
-          };
-          fetchJugador();
+          setJugador(updatedPersona);
         }}
       />
+      
       <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color="#3D8FA4" />
+        </TouchableOpacity>
+        
         <Text style={styles.title}>Mi Perfil</Text>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={handleEditProfile} style={styles.button}>
-            <MaterialIcons name="edit" size={20} color="white" />
+        
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity 
+            style={[styles.button, styles.editButton]}
+            onPress={handleEditProfile}
+          >
+            <MaterialIcons name="edit" size={18} color="white" />
             <Text style={styles.buttonText}>Editar perfil</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsModalOpen(true)} style={styles.button}>
-            <MaterialIcons name="edit" size={20} color="white" />
-            <Text style={styles.buttonText}>Cambiar Contraseña</Text>
+          
+          <TouchableOpacity 
+            style={[styles.button, styles.passwordButton]}
+            onPress={() => setIsModalOpen(true)}
+          >
+            <MaterialIcons name="lock" size={18} color="white" />
+            <Text style={styles.buttonText}>Contraseña</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.button}>
-            <MaterialIcons name="logout" size={20} color="white" />
-            <Text style={styles.buttonText}>Cerrar Sesión</Text>
+          
+          <TouchableOpacity 
+            style={[styles.button, styles.logoutButton]}
+            onPress={handleLogout}
+          >
+            <MaterialIcons name="logout" size={18} color="white" />
+            <Text style={styles.buttonText}>Salir</Text>
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.content}>
-        <View style={styles.imageContainer}>
-          <Image source={getImagenPerfil(jugador)} style={styles.image} />
-        </View>
-        <View style={styles.details}>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Nombre Completo:</Text> {jugador.nombre} {jugador.apellido}
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Carnet de Identidad:</Text> {jugador.ci}
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Fecha de Nacimiento:</Text> {jugador.fecha_nacimiento}
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Edad:</Text> {calcularEdad(jugador.fecha_nacimiento)} años
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Género:</Text> {ConvertGenero(jugador.genero)}
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Dirección vivienda:</Text> {jugador.direccion}
-          </Text>
-          <Text style={styles.detailText}>
-            <Text style={styles.bold}>Correo Electrónico:</Text> {jugador.correo}
-          </Text>
+      
+      <View style={styles.profileContainer}>
+        <Image 
+          source={getImagenPerfil()} 
+          style={styles.profileImage} 
+        />
+        
+        <View style={styles.detailsContainer}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Nombre Completo:</Text>
+            <Text style={styles.detailValue}>
+              {jugador.nombre} {jugador.apellido}
+            </Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Carnet de Identidad:</Text>
+            <Text style={styles.detailValue}>{jugador.ci}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Fecha de Nacimiento:</Text>
+            <Text style={styles.detailValue}>{jugador.fecha_nacimiento}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Edad:</Text>
+            <Text style={styles.detailValue}>
+              {calcularEdad(jugador.fecha_nacimiento)}
+            </Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Género:</Text>
+            <Text style={styles.detailValue}>{getGeneroTexto()}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Dirección:</Text>
+            <Text style={styles.detailValue}>{jugador.direccion || 'N/A'}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Correo:</Text>
+            <Text style={styles.detailValue}>{jugador.correo || 'N/A'}</Text>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -148,68 +215,118 @@ const PerfilJugador = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#ffffff',
   },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 2,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+    flexWrap: 'wrap',
+  },
+  backButton: {
+    padding: 8,
   },
   title: {
-    fontSize: 26,
-    color: '#333',
+    fontSize: 22,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
+    color: '#333',
+    marginVertical: 10,
   },
-  buttonContainer: {
+  buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
+    width: '100%',
+    marginTop: 10,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#3D8FA4',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 6,
-    marginBottom: 10,
+    marginHorizontal: 4,
     flex: 1,
-    marginHorizontal: 5,
+    justifyContent: 'center',
+  },
+  editButton: {
+    backgroundColor: '#3D8FA4',
+  },
+  passwordButton: {
+    backgroundColor: '#5D8FA4',
+  },
+  logoutButton: {
+    backgroundColor: '#45575C',
   },
   buttonText: {
     color: 'white',
-    fontSize: 14,
     marginLeft: 5,
+    fontSize: 14,
+    fontWeight: '500',
   },
-  content: {
-    flexDirection: 'column',
+  profileContainer: {
     alignItems: 'center',
-    paddingTop: 20,
+    marginTop: 20,
   },
-  imageContainer: {
-    marginBottom: 20,
-  },
-  image: {
+  profileImage: {
     width: 150,
     height: 150,
     borderRadius: 75,
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: '#ddd',
+    marginBottom: 20,
   },
-  details: {
+  detailsContainer: {
     width: '100%',
   },
-  detailText: {
-    fontSize: 16,
-    marginVertical: 8,
-    color: '#444',
+  detailRow: {
+    marginBottom: 15,
   },
-  bold: {
+  detailLabel: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#222',
+    marginBottom: 3,
+  },
+  detailValue: {
+    fontSize: 16,
+    color: '#444',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  closeButton: {
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#ddd',
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 

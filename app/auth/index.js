@@ -6,7 +6,7 @@ import { useSession } from '../../context/SessionProvider';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import logo from '../../assets/logo.png';
-import styles from '../../styles/login'
+import styles from '../../styles/login';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -17,7 +17,7 @@ const InicioDeSesion = () => {
   });
   const [roles, setRoles] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState('');
-  const { login } = useSession();
+  const { login, updateRole } = useSession(); // Usa updateRole del contexto
   const router = useRouter();
 
   const handleChange = (name, value) => {
@@ -32,10 +32,10 @@ const InicioDeSesion = () => {
       const { requireRoleSelection, roles, token, user } = response.data;
 
       if (requireRoleSelection) {
-        setRoles(roles); // Actualiza el estado para mostrar los roles
+        setRoles(roles);
       } else {
-        login({ user, token }); // Inicia sesión directamente si no hay selección de rol
-        router.push('/hamburgerAdmin');
+        login({ user, token });
+        router.push('/campeonato'); // Cambiado de '/hamburgerAdmin' a '/campeonatos'
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
@@ -62,7 +62,14 @@ const InicioDeSesion = () => {
 
       const { token, user } = response.data;
       login({ user, token });
-      router.push('/hamburgerAdmin');
+
+      // Guardar el rol seleccionado en el contexto y AsyncStorage
+      const selectedRole = roles.find((role) => role.id === selectedRoleId);
+      if (selectedRole) {
+        updateRole(selectedRole);
+      }
+
+      router.push('/campeonato'); 
     } catch (error) {
       console.error('Error al procesar el rol seleccionado:', error);
       Alert.alert('Error', 'Ocurrió un error al procesar su rol');
