@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
+
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -7,10 +8,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  mainScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContentContainer: {
+    paddingBottom: 20,
+  },
   horizontalList: {
     paddingHorizontal: width * 0.075,
   },
-  
   filtersContainer: {
     backgroundColor: '#fff',
     padding: 15,
@@ -61,9 +68,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  },
-  horizontalList: {
-    paddingHorizontal: width * 0.075,
   },
   matchCardLarge: {
     width: width * 0.85,
@@ -153,13 +157,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   matchCardSmall: {
-    width: '48%', // Ocupa casi la mitad del ancho
+    width: '48%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
     elevation: 3,
-    marginHorizontal: '1%', // Pequeño margen horizontal
-    marginBottom: 15, // Espacio entre filas
+    marginHorizontal: '1%',
+    marginBottom: 15,
   },
   smallMatchContent: {
     flexDirection: 'row',
@@ -169,10 +173,10 @@ const styles = StyleSheet.create({
   },
   smallTeamContainer: {
     alignItems: 'center',
-    width: '40%', // Ajusta el ancho de los contenedores de equipo
+    width: '40%',
   },
   teamLogoSmall: {
-    width: 50, // Reduce un poco el tamaño del logo
+    width: 50,
     height: 50,
     borderRadius: 25,
     marginBottom: 5,
@@ -184,9 +188,9 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   vsTextSmall: {
-    fontSize: 14, // Tamaño un poco más grande para el VS
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#3D8FA4', // Color que combine con tu tema
+    color: '#3D8FA4',
   },
   smallMatchFooter: {
     alignItems: 'center',
@@ -207,7 +211,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 15,
   },
-
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -223,33 +226,29 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 5,
-  },
-  gridItem: {
-    width: '48%',
-    marginBottom: 15,
-  },
-
   sectionContainer2: {
     marginTop: 10,
     paddingHorizontal: 10,
-    flex: 1, 
+    flex: 1,
   },
-// Para mejorar el aspecto de la tarjeta solitaria
-lastOddItem: {
-  width: '90%',
-  alignSelf: 'center',
-  marginHorizontal: '5%',
-  // Opcional: darle un aspecto diferente
-  borderLeftWidth: 3,
-  borderLeftColor: '#3D8FA4',
-  borderRightWidth: 3,
-  borderRightColor: '#3D8FA4',
-},
-
+  filterToggleButton: {
+    backgroundColor: '#64848C',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 5,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+  },
+  filterToggleText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginRight: 8,
+    fontSize: 16,
+  },
 });
-  export default styles;
+
+export default styles;

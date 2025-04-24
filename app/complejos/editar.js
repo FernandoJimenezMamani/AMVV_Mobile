@@ -34,12 +34,14 @@ const EditarComplejo = ({ isOpen, onClose, complejoId, onComplejoUpdated }) => {
           user_id: 2,
         });
       } catch (error) {
+        console.error('Error al obtener el complejo:', error);
         Toast.show({
           type: 'error',
           text1: 'Error al obtener los datos del complejo',
-          position: 'bottom'
+          position: 'bottom',
+          visibilityTime: 3000,
+          autoHide: true,
         });
-        console.error('Error al obtener el complejo:', error);
       }
     };
 
@@ -68,7 +70,9 @@ const EditarComplejo = ({ isOpen, onClose, complejoId, onComplejoUpdated }) => {
       Toast.show({
         type: 'error',
         text1: 'Todos los campos deben ser completados',
-        position: 'bottom'
+        position: 'bottom',
+        visibilityTime: 3000,
+        autoHide: true,
       });
       return;
     }
@@ -77,21 +81,25 @@ const EditarComplejo = ({ isOpen, onClose, complejoId, onComplejoUpdated }) => {
       await axios.put(`${API_BASE_URL}/lugar/edit/${complejoId}`, formData, {
         headers: { 'Content-Type': 'application/json' },
       });
-
+      onClose();
+      onComplejoUpdated();
       Toast.show({
         type: 'success',
         text1: 'Complejo actualizado exitosamente',
-        position: 'bottom'
+        position: 'bottom',
+        visibilityTime: 3000,
+        autoHide: true,
       });
-      onClose();
-      onComplejoUpdated();
     } catch (error) {
+      console.error('Error al actualizar el complejo:', error);
       Toast.show({
         type: 'error',
         text1: 'Error al actualizar el complejo',
-        position: 'bottom'
+        text2: error.response?.data?.message || 'Intente nuevamente',
+        position: 'bottom',
+        visibilityTime: 4000,
+        autoHide: true,
       });
-      console.error('Error al actualizar el complejo:', error);
     }
   };
 

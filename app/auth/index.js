@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import logo from '../../assets/logo.png';
 import styles from '../../styles/login';
+import Toast from 'react-native-toast-message';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -36,6 +37,11 @@ const InicioDeSesion = () => {
       } else {
         login({ user, token });
         router.push('/campeonato'); // Cambiado de '/hamburgerAdmin' a '/campeonatos'
+        Toast.show({
+                type: 'success',
+                text1: 'Iniciaste sesion',
+                position: 'bottom'
+              });
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
@@ -70,6 +76,11 @@ const InicioDeSesion = () => {
       }
 
       router.push('/campeonato'); 
+      Toast.show({
+        type: 'success',
+        text1: 'Iniciaste sesion',
+        position: 'bottom'
+      });
     } catch (error) {
       console.error('Error al procesar el rol seleccionado:', error);
       Alert.alert('Error', 'Ocurrió un error al procesar su rol');

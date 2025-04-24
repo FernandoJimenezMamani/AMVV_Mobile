@@ -5,10 +5,10 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
   SafeAreaView,
+  Animated,
+  Alert,
+  ScrollView
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -28,9 +28,24 @@ const Home = () => {
   const [campeonatos, setCampeonatos] = useState([]);
   const [selectedCampeonato, setSelectedCampeonato] = useState(null);
   const [resultados, setResultados] = useState({});
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const animationHeight = useState(new Animated.Value(0))[0];
   const navigation = useRouter();
 
-  // Fetch data (similar a tu useEffect original)
+  // Animación para mostrar/ocultar filtros
+  useEffect(() => {
+    Animated.timing(animationHeight, {
+      toValue: filtersVisible ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [filtersVisible]);
+
+  const toggleFilters = () => {
+    setFiltersVisible(!filtersVisible);
+  };
+
+  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +71,7 @@ const Home = () => {
     fetchData();
   }, []);
 
-  // Fetch partidos y resultados (adaptado)
+  // Fetch partidos y resultados
   useEffect(() => {
     if (!selectedCategoria || !selectedCampeonato) return;
   
@@ -78,12 +93,8 @@ const Home = () => {
         ]);
   
         setPartidos(destacadosRes.data);
-        setNextPartidos(todosRes.data); // Excluimos los primeros 5 que ya están en destacados
+        setNextPartidos(todosRes.data);
         
-        console.log('Partidos destacados:', destacadosRes.data);
-        console.log('Todos los partidos:', todosRes.data);
-        console.log('Próximos partidos:', todosRes.data.slice(5));
-  
         // Fetch resultados para partidos finalizados
         if (selectedEstado === estadosPartidoCampMapping.Finalizado) {
           const resultadosTemp = {};
@@ -101,7 +112,6 @@ const Home = () => {
         }
       } catch (error) {
         console.error('Error fetching partidos:', error);
-        // Opcional: Mostrar mensaje al usuario
         Alert.alert("Error", "No se pudieron cargar los partidos. Por favor intenta nuevamente.");
       }
     };
@@ -129,10 +139,13 @@ const Home = () => {
   };
 
   const handlePartidoPress = (partidoId) => {
-    navigation.navigate('PartidoDetalle', {
-      partidoId,
-      campeonatoId: selectedCampeonato,
-      categoriaId: selectedCategoria,
+    navigation.navigate({
+      pathname: 'partidos/detalle_partido',
+      params: { 
+        partidoId: partidoId.toString(),
+        campeonatoId: selectedCampeonato.toString(),
+        categoriaId: selectedCategoria.toString() 
+      }
     });
   };
 
@@ -193,11 +206,8 @@ const Home = () => {
       </View>
     </TouchableOpacity>
   );
-  const dataWithPadding = nextPartidos.length % 2 !== 0 
-  ? [...nextPartidos, { id: 'empty', isEmpty: true }] 
-  : nextPartidos;
+
   const renderPartidoSecundario = ({ item }) => (
-    
     <TouchableOpacity 
       style={styles.matchCardSmall}
       onPress={() => handlePartidoPress(item.id)}
@@ -225,121 +235,159 @@ const Home = () => {
     </TouchableOpacity>
   );
 
+  // Para el grid de partidos secundarios
+  const dataWithPadding = nextPartidos.length % 2 !== 0 
+    ? [...nextPartidos, { id: 'empty', isEmpty: true }] 
+    : nextPartidos;
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Filtros */}
-      <View style={styles.filtersContainer}>
-        <Text style={styles.filtersTitle}>Filtros</Text>
-        
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedCampeonato}
-            onValueChange={(value) => setSelectedCampeonato(value)}
-            style={styles.picker}
-          >
-            {campeonatos.map((camp) => (
-              <Picker.Item 
-                key={camp.id} 
-                label={`🏆 ${camp.nombre}`} 
-                value={camp.id} 
-              />
-            ))}
-          </Picker>
-        </View>
-        
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedCategoria}
-            onValueChange={(value) => setSelectedCategoria(value)}
-            style={styles.picker}
-          >
-            {categorias.map((cat) => (
-              <Picker.Item 
-                key={cat.id} 
-                label={`${cat.nombre} - ${setGenderName(cat.genero)}`} 
-                value={cat.id} 
-              />
-            ))}
-          </Picker>
-        </View>
-        
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedEstado}
-            onValueChange={(value) => setSelectedEstado(value)}
-            style={styles.picker}
-          >
-            <Picker.Item label="📅 Partidos Próximos" value="C" />
-            <Picker.Item label="✅ Partidos Finalizados" value="J" />
-          </Picker>
-        </View>
-        
-        <TouchableOpacity style={styles.tablaButton} onPress={handleVerTabla}>
-          <Text style={styles.tablaButtonText}>Ver Tabla de Posiciones</Text>
+      <ScrollView 
+        style={styles.mainScrollView}
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Botón para mostrar/ocultar filtros */}
+        <TouchableOpacity 
+          style={styles.filterToggleButton} 
+          onPress={toggleFilters}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.filterToggleText}>
+            {filtersVisible ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+          </Text>
+          <Icon 
+            name={filtersVisible ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} 
+            size={24} 
+            color="#fff" 
+          />
         </TouchableOpacity>
-      </View>
 
-      {/* Partidos Destacados (Scroll Horizontal) */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>
-          {selectedEstado === estadosPartidoCampMapping.Confirmado 
-            ? 'Partidos Destacados' 
-            : 'Últimos Resultados'}
-        </Text>
-        
-        {partidos.length > 0 ? (
-         <FlatList
-         data={partidos}
-         renderItem={renderPartidoPrincipal}
-         keyExtractor={(item) => item.id.toString()}
-         horizontal
-         pagingEnabled
-         showsHorizontalScrollIndicator={false}
-         snapToInterval={styles.matchCardLarge.width} // Usamos el width definido en los estilos
-         decelerationRate="fast"
-         contentContainerStyle={{ paddingHorizontal: styles.horizontalList.paddingHorizontal }}
-       />
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Icon name="info-outline" size={50} color="#999" />
-            <Text style={styles.emptyText}>
-              {selectedEstado === estadosPartidoCampMapping.Confirmado
-                ? 'No hay partidos próximos'
-                : 'No hay resultados recientes'}
-            </Text>
+        {/* Filtros (con animación) */}
+        <Animated.View 
+          style={[
+            styles.filtersContainer,
+            {
+              height: animationHeight.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 280]
+              }),
+              opacity: animationHeight,
+              overflow: 'hidden'
+            }
+          ]}
+        >
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedCampeonato}
+              onValueChange={(value) => setSelectedCampeonato(value)}
+              style={styles.picker}
+            >
+              {campeonatos.map((camp) => (
+                <Picker.Item 
+                  key={camp.id} 
+                  label={`🏆 ${camp.nombre}`} 
+                  value={camp.id} 
+                />
+              ))}
+            </Picker>
           </View>
-        )}
-      </View>
+          
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedCategoria}
+              onValueChange={(value) => setSelectedCategoria(value)}
+              style={styles.picker}
+            >
+              {categorias.map((cat) => (
+                <Picker.Item 
+                  key={cat.id} 
+                  label={`${cat.nombre} - ${setGenderName(cat.genero)}`} 
+                  value={cat.id} 
+                />
+              ))}
+            </Picker>
+          </View>
+          
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedEstado}
+              onValueChange={(value) => setSelectedEstado(value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="📅 Partidos Próximos" value="C" />
+              <Picker.Item label="✅ Partidos Finalizados" value="J" />
+            </Picker>
+          </View>
+          
+          <TouchableOpacity style={styles.tablaButton} onPress={handleVerTabla}>
+            <Text style={styles.tablaButtonText}>Ver Tabla de Posiciones</Text>
+          </TouchableOpacity>
+        </Animated.View>
 
-      {/* Todos los Partidos (Grid) */}
-<View style={styles.sectionContainer2}>
-  <Text style={styles.sectionTitle}>
-    {selectedEstado === estadosPartidoCampMapping.Confirmado
-      ? 'Todos los Próximos Partidos'
-      : 'Historial de Partidos'}
-  </Text>
-  
-  {nextPartidos.length > 0 ? (
-    <FlatList
-    data={dataWithPadding}
-    renderItem={({ item }) => item.isEmpty ? (
-      <View style={{ width: '48%' }} />
-    ) : (
-      renderPartidoSecundario({ item })
-    )}
-      keyExtractor={(item) => item.id.toString()}
-      numColumns={2}
-      columnWrapperStyle={styles.gridRow}
-      contentContainerStyle={styles.gridContainer}
-      showsVerticalScrollIndicator={false}
-    />
-  ) : (
-    <View style={styles.emptyContainer}>
-      <Icon name="info-outline" size={50} color="#999" />
-      <Text style={styles.emptyText}>No hay partidos disponibles</Text>
-    </View>
-  )}
-</View>
+        {/* Partidos Destacados (Scroll Horizontal) */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>
+            {selectedEstado === estadosPartidoCampMapping.Confirmado 
+              ? 'Partidos Destacados' 
+              : 'Últimos Resultados'}
+          </Text>
+          
+          {partidos.length > 0 ? (
+            <FlatList
+              data={partidos}
+              renderItem={renderPartidoPrincipal}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={styles.matchCardLarge.width}
+              decelerationRate="fast"
+              contentContainerStyle={{ paddingHorizontal: styles.horizontalList.paddingHorizontal }}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Icon name="info-outline" size={50} color="#999" />
+              <Text style={styles.emptyText}>
+                {selectedEstado === estadosPartidoCampMapping.Confirmado
+                  ? 'No hay partidos próximos'
+                  : 'No hay resultados recientes'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Todos los Partidos (Grid) */}
+        <View style={styles.sectionContainer2}>
+          <Text style={styles.sectionTitle}>
+            {selectedEstado === estadosPartidoCampMapping.Confirmado
+              ? 'Todos los Próximos Partidos'
+              : 'Historial de Partidos'}
+          </Text>
+          
+          {nextPartidos.length > 0 ? (
+            <FlatList
+              data={dataWithPadding}
+              renderItem={({ item }) => item.isEmpty ? (
+                <View style={{ width: '48%' }} />
+              ) : (
+                renderPartidoSecundario({ item })
+              )}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              columnWrapperStyle={styles.gridRow}
+              contentContainerStyle={styles.gridContainer}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Icon name="info-outline" size={50} color="#999" />
+              <Text style={styles.emptyText}>No hay partidos disponibles</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
