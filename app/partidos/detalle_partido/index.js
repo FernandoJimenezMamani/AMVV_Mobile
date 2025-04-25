@@ -183,8 +183,8 @@ const PartidoDetalle = () => {
 
   // Funciones para manejar acciones
   const handlePartidoClick = () => {
-    router.push({
-      pathname: '/registrar_resultado',
+    router.navigate({
+      pathname: '/partidos/registrar_resultado',
       params: { 
         partidoId,
         campeonatoId,
