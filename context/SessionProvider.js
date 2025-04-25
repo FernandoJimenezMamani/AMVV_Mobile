@@ -13,31 +13,41 @@ export const SessionProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [tokenData, setTokenData] = useState(null);
-  const [activeRole, setActiveRole] = useState(null); // Estado para el rol activo
+  const [activeRole, setActiveRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Cargar la sesión al iniciar
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+
   useEffect(() => {
     const loadSession = async () => {
       try {
         const storedToken = await AsyncStorage.getItem('token');
         const storedUser = await AsyncStorage.getItem('user');
-        const storedRole = await AsyncStorage.getItem('activeRole'); // Cargar el rol activo
+        const storedRole = await AsyncStorage.getItem('activeRole');
 
         if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-
           try {
             const decoded = jwtDecode(storedToken);
-            setTokenData(decoded);
-            console.log('Token decodificado:', decoded);
 
-            // Si hay un rol almacenado, establecerlo como activo
+            // ✅ Verificación de expiración opcional
+            if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+              console.log("Token expirado");
+              await logout();
+              return;
+            }
+
+            setToken(storedToken);
+            setUser(JSON.parse(storedUser));
+            setTokenData(decoded);
+            setIsLoggedIn(true); // ✅ Setear como logueado
+
             if (storedRole) {
               setActiveRole(JSON.parse(storedRole));
             }
+
+            console.log('Token decodificado:', decoded);
           } catch (error) {
             console.error('Error al decodificar el token:', error);
+            await logout(); // ✅ Limpiar si está corrupto
           }
         } else {
           console.log('No se encontró sesión en AsyncStorage');
@@ -47,13 +57,11 @@ export const SessionProvider = ({ children }) => {
       } finally {
         setIsLoading(false);
       }
-      
     };
 
     loadSession();
   }, []);
 
-  // Función para iniciar sesión
   const login = async (userData) => {
     const { token } = userData;
 
@@ -62,7 +70,7 @@ export const SessionProvider = ({ children }) => {
       setToken(token);
       setUser(decoded);
       setTokenData(decoded);
-      // Guardar token y datos de usuario en AsyncStorage
+      setIsLoggedIn(true); // ✅ Setear logueo activo
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(decoded));
     } catch (error) {
@@ -70,36 +78,47 @@ export const SessionProvider = ({ children }) => {
     }
   };
 
-  // Función para cerrar sesión
   const logout = async () => {
     setUser(null);
     setToken(null);
     setTokenData(null);
-    setActiveRole(null); // Limpiar el rol activo
-    // Eliminar datos de AsyncStorage
+    setActiveRole(null);
+    setIsLoggedIn(false); // ✅ Resetear estado
+
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('activeRole'); // Eliminar el rol activo
+      await AsyncStorage.removeItem('activeRole');
     } catch (error) {
       console.error('Error al eliminar la sesión:', error);
     }
   };
 
-  // Función para actualizar el rol activo
   const updateRole = async (role) => {
     setActiveRole(role);
-    await AsyncStorage.setItem('activeRole', JSON.stringify(role)); // Guardar el rol en AsyncStorage
+    await AsyncStorage.setItem('activeRole', JSON.stringify(role));
   };
 
   if (isLoading) {
-    return <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <ActivityIndicator size="large" />
-    </View>;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
+
   return (
     <SessionContext.Provider
-      value={{ user, token, tokenData, activeRole, login, logout, updateRole }}
+      value={{
+        user,
+        token,
+        tokenData,
+        activeRole,
+        isLoggedIn, // ✅ Agregado aquí
+        login,
+        logout,
+        updateRole,
+      }}
     >
       {children}
     </SessionContext.Provider>

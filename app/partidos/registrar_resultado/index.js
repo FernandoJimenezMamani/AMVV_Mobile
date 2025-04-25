@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Button,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -49,15 +50,10 @@ const SubmitResultados = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Estados para la cámara
-  const [showCamera, setShowCamera] = useState(false);
-  const [hasCameraPermission, setHasCameraPermission] = useState(null);
-  const [cameraType, setCameraType] = useState(null);
-  const [flashMode, setFlashMode] = useState(null);
-
+  const [facing, setFacing] = useState('back');
+  const [flash, setFlash] = useState('off');
+  const [permission, requestPermission] = useCameraPermissions();
   const [cameraVisible, setCameraVisible] = useState(false);
-const [facing, setFacing] = useState<CameraType>('back');
-const [permission, requestPermission] = useCameraPermissions() ?? {};
-
 
   // Obtener datos iniciales
   useEffect(() => {
@@ -185,7 +181,7 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
           type: 'image/jpeg',
         });
         setImagenPlanillaURL(croppedImage.uri);
-        setShowCamera(false);
+        setCameraVisible(false);
       } catch (error) {
         console.error("Error al tomar foto:", error);
         Alert.alert("Error", "No se pudo tomar la foto");
@@ -203,11 +199,11 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
         base64: true,
       });
 
-      if (!result.cancelled) {
+      if (!result.canceled) {
         // Recortar la imagen
         const croppedImage = await ImageManipulator.manipulateAsync(
-          result.uri,
-          [{ crop: { originX: 0, originY: 0, width: result.width, height: result.height } }],
+          result.assets[0].uri,
+          [{ crop: { originX: 0, originY: 0, width: result.assets[0].width, height: result.assets[0].height } }],
           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
 
@@ -414,11 +410,19 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
     setTarjetas(tarjetas.filter((_, i) => i !== index));
   };
 
-  if (hasCameraPermission === null) {
+  if (!permission) {
+    // Permisos aún no cargados
     return <View />;
   }
-  if (hasCameraPermission === false) {
-    return <Text>No se tiene acceso a la cámara</Text>;
+  
+  if (!permission.granted) {
+    // Mostrar UI para solicitar permisos
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Se requiere permiso para usar la cámara.</Text>
+        <Button title="Dar permiso" onPress={requestPermission} />
+      </View>
+    );
   }
 
   if (!equipoLocal || !equipoVisitante || !partido) {
@@ -432,25 +436,19 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
   return (
     <View style={styles.container}>
       {/* Vista de la cámara */}
-      {showCamera && cameraType !== null && flashMode !== null ? (
+      {cameraVisible ? (
         <View style={styles.cameraContainer}>
-          <Camera
+          <CameraView
             style={styles.camera}
-            type={cameraType}
-            flashMode={flashMode}
+            facing={facing}
+            flash={flash}
             ref={cameraRef}
-          >
+            >
             <View style={styles.cameraControls}>
               <TouchableOpacity
                 style={styles.cameraButton}
                 onPress={() => {
-                  if (Camera?.Constants) {
-                    setCameraType(
-                      cameraType === Camera.Constants.Type.back
-                        ? Camera.Constants.Type.front
-                        : Camera.Constants.Type.back
-                    );
-                  }
+                    setFacing(facing === 'back' ? 'front' : 'back');
                 }}
               >
                 <MaterialCommunityIcons name="camera-flip" size={30} color="white" />
@@ -466,17 +464,11 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
               <TouchableOpacity
                 style={styles.cameraButton}
                 onPress={() => {
-                  if (Camera?.Constants) {
-                    setFlashMode(
-                      flashMode === Camera.Constants.FlashMode.off
-                        ? Camera.Constants.FlashMode.on
-                        : Camera.Constants.FlashMode.off
-                    );
-                  }
+                  setFlash(flash === 'off' ? 'on' : 'off');
                 }}
               >
                 <MaterialCommunityIcons 
-                  name={flashMode === Camera.Constants?.FlashMode?.off ? "flash-off" : "flash"} 
+                  name={flash === 'off' ? "flash-off" : "flash"} 
                   size={30} 
                   color="white" 
                 />
@@ -485,11 +477,11 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
             
             <TouchableOpacity
               style={styles.closeCameraButton}
-              onPress={() => setShowCamera(false)}
+              onPress={() => setCameraVisible(false)}
             >
               <Icon name="close" size={30} color="white" />
             </TouchableOpacity>
-          </Camera>
+          </CameraView>
         </View>
       ) : (
         <ScrollView>
@@ -809,7 +801,6 @@ const [permission, requestPermission] = useCameraPermissions() ?? {};
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
