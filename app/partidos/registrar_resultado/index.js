@@ -22,6 +22,7 @@ import Club_defecto from '../../../assets/img/Default_Imagen_Club.webp';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import Toast from 'react-native-toast-message';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -163,9 +164,10 @@ const SubmitResultados = () => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
-          quality: 0.7,
+          quality: 0.8, 
           base64: true,
-          skipProcessing: true,
+          skipProcessing: false, 
+          exif: true 
         });
 
         // Recortar la imagen
@@ -258,12 +260,22 @@ const SubmitResultados = () => {
     const set3Llenado = !vacio(s3L) || !vacio(s3V);
   
     if (set1Vacio && (set2Llenado || set3Llenado)) {
-      Alert.alert("Advertencia", "Debes registrar el Set 1 antes que el Set 2 o Set 3");
+      Toast.show({
+        type: 'error',
+        text1: 'Validación',
+        text2: 'Debes registrar el Set 1 antes que el Set 2 o Set 3.',
+        position: 'bottom'
+      });
       return false;
     }
   
     if (set2Vacio && set3Llenado) {
-      Alert.alert("Advertencia", "Debes registrar el Set 2 antes que el Set 3");
+      Toast.show({
+        type: 'error',
+        text1: 'Validación',
+        text2: 'Debes registrar el Set 2 antes que el Set 3.',
+        position: 'bottom'
+      });
       return false;
     }
   
@@ -275,7 +287,13 @@ const SubmitResultados = () => {
     if (!validarOrdenSets()) return;
 
     if (!imagenPlanilla && !imagenPlanillaURL) {
-      Alert.alert("Error", "Debes subir una imagen de la planilla antes de enviar");
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Debes subir una imagen de la planilla antes de enviar.',
+        position: 'bottom'
+      });
+      setIsLoading(false);
       return;
     }
 
@@ -319,7 +337,7 @@ const SubmitResultados = () => {
       
       if (response.ok) {
         Alert.alert("Éxito", "Resultados registrados correctamente");
-        navigation.goBack();
+        navigation.back();
       } else {
         Alert.alert("Error", result.message || "Error al registrar los resultados");
       }
@@ -374,7 +392,15 @@ const SubmitResultados = () => {
       setIsLoading(false);
     }
   };
-
+  const validarInputNumerico = (text) => {
+    // Expresión regular que solo permite números enteros
+    const soloNumeros = /^[0-9]*$/;
+    
+    if (soloNumeros.test(text)) {
+      return text; // Retorna el texto si es válido
+    }
+    return ''; // Retorna cadena vacía si no es válido
+  };
   // Agregar tarjeta
   const handleAgregarTarjeta = () => {
     const jugador = jugadores.find(j => j.jugador_id === parseInt(jugadorSeleccionado));
@@ -437,57 +463,60 @@ const SubmitResultados = () => {
     <View style={styles.container}>
       {/* Vista de la cámara */}
       {cameraVisible ? (
-        <View style={styles.cameraContainer}>
-          <CameraView
-            style={styles.camera}
-            facing={facing}
-            flash={flash}
-            ref={cameraRef}
-            >
-            <View style={styles.cameraControls}>
-              <TouchableOpacity
-                style={styles.cameraButton}
-                onPress={() => {
-                    setFacing(facing === 'back' ? 'front' : 'back');
-                }}
-              >
-                <MaterialCommunityIcons name="camera-flip" size={30} color="white" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={takePicture}
-              >
-                <MaterialCommunityIcons name="camera" size={40} color="white" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.cameraButton}
-                onPress={() => {
-                  setFlash(flash === 'off' ? 'on' : 'off');
-                }}
-              >
-                <MaterialCommunityIcons 
-                  name={flash === 'off' ? "flash-off" : "flash"} 
-                  size={30} 
-                  color="white" 
-                />
-              </TouchableOpacity>
-            </View>
-            
-            <TouchableOpacity
-              style={styles.closeCameraButton}
-              onPress={() => setCameraVisible(false)}
-            >
-              <Icon name="close" size={30} color="white" />
-            </TouchableOpacity>
-          </CameraView>
+      <View style={{ flex: 1 }}>
+      <CameraView
+        style={styles.camera}
+        facing={facing}
+        flash={flash}
+        ref={cameraRef}
+      >
+        <View style={styles.cameraControls}>
+          <TouchableOpacity
+            style={styles.cameraButton}
+            onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}
+          >
+            <MaterialCommunityIcons name="camera-flip" size={30} color="white" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.captureButton}
+            onPress={takePicture}
+          >
+            <MaterialCommunityIcons name="camera" size={40} color="white" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.cameraButton}
+            onPress={() => setFlash(flash === 'off' ? 'on' : 'off')}
+          >
+            <MaterialCommunityIcons 
+              name={flash === 'off' ? "flash-off" : "flash"} 
+              size={30} 
+              color="white" 
+            />
+          </TouchableOpacity>
         </View>
+      </CameraView>
+      
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          top: 40,
+          right: 20,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          borderRadius: 20,
+          padding: 10,
+        }}
+        onPress={() => setCameraVisible(false)}
+      >
+        <Icon name="close" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
       ) : (
         <ScrollView>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity onPress={() => navigation.back()} style={styles.backButton}>
               <Icon name="arrow-back" size={24} color="#143E42" />
             </TouchableOpacity>
             <Text style={styles.title}>Registrar Resultados</Text>
@@ -536,16 +565,24 @@ const SubmitResultados = () => {
                   style={styles.setInput}
                   placeholder="Set 1"
                   value={localSets.set1.toString()}
-                  onChangeText={(text) => setLocalSets({...localSets, set1: text})}
+                  onChangeText={(text) => {
+                    const textoValidado = validarInputNumerico(text);
+                    setLocalSets({...localSets, set1: textoValidado});
+                  }}
                   keyboardType="numeric"
+                  maxLength={2}
                   editable={walkover === "null"}
                 />
                 <TextInput
                   style={styles.setInput}
                   placeholder="Set 2"
                   value={localSets.set2.toString()}
-                  onChangeText={(text) => setLocalSets({...localSets, set2: text})}
+                  onChangeText={(text) => {
+                    const textoValidado = validarInputNumerico(text);
+                    setLocalSets({...localSets, set2: textoValidado});
+                  }}
                   keyboardType="numeric"
+                  maxLength={2}
                   editable={walkover === "null"}
                 />
                 {walkover !== "L" && walkover !== "V" && (
@@ -553,8 +590,12 @@ const SubmitResultados = () => {
                     style={styles.setInput}
                     placeholder="Set 3"
                     value={localSets.set3.toString()}
-                    onChangeText={(text) => setLocalSets({...localSets, set3: text})}
+                    onChangeText={(text) => {
+                      const textoValidado = validarInputNumerico(text);
+                      setLocalSets({...localSets, set3: textoValidado});
+                    }}
                     keyboardType="numeric"
+                    maxLength={2}
                     editable={walkover === "null"}
                   />
                 )}
@@ -798,6 +839,7 @@ const SubmitResultados = () => {
           </Modal>
         </ScrollView>
       )}
+      <Toast />
     </View>
   );
 };
@@ -1085,6 +1127,28 @@ const styles = StyleSheet.create({
   imageModalContent: {
     width: '100%',
     height: '100%',
+  },
+  cameraContainer: {
+    flex: 1,
+    width: '100%',
+    aspectRatio: 3/4, // Relación de aspecto común para fotos (puedes ajustar)
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'flex-end',
+  },
+  cameraControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  captureButton: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 50,
+    padding: 20,
   },
 });
 
