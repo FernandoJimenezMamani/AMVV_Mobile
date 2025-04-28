@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaCategorias = () => {
   const [categorias, setCategorias] = useState([]);
-  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedDivision, setSelectedDivision] = useState('MY');
   const { id: campeonatoId } = useLocalSearchParams();
   const router = useRouter();
 
@@ -50,7 +50,7 @@ const ListaCategorias = () => {
   };
 
   const handleBack = () => {
-    router.push('/campeonatos/indice');
+    router.push('/campeonato');
   };
 
   const renderGenderIcon = (genero) => {

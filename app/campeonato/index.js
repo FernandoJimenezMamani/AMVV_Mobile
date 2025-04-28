@@ -11,6 +11,7 @@ import * as Sharing from 'expo-sharing';
 import estadosMapping from '../../constants/campeonato_estados';
 import rolMapping from '../../constants/roles';
 import styles from '../../styles/campeonato/index';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
@@ -177,36 +178,36 @@ const Campeonatos = () => {
 
     return (
       <View style={[styles.estadoContainer, estiloEstado]}>
-        <View style={styles.punto} />
         <Text style={styles.estadoText}>{estadoTexto}</Text>
       </View>
     );
   };
 
   const renderItem = ({ item }) => (
+    
     <View style={styles.campeonatoCard}>
       {renderEstado(item.estado)}
       
       <Text style={styles.campeonatoNombre}>{item.nombre}</Text>
       
       <Text style={styles.campeonatoText}>
-        <Text style={styles.boldText}>Inicio de movimientos y transacciones:</Text>{" "}
-        {moment.parseZone(item.fecha_inicio_transaccion).format("DD [de] MMMM, YYYY HH:mm [hrs]")}
+        <Text style={styles.boldText}>Inicio de preparaciones:</Text>{" "}
+        {moment.parseZone(item.fecha_inicio_transaccion).format("DD/MM/YYYY HH:mm")        }
       </Text>
       
       <Text style={styles.campeonatoText}>
-        <Text style={styles.boldText}>Fin de movimientos y transacciones:</Text>{" "}
-        {moment.parseZone(item.fecha_fin_transaccion).format("DD [de] MMMM, YYYY HH:mm [hrs]")}
+        <Text style={styles.boldText}>Fin de preparacioness:</Text>{" "}
+        {moment.parseZone(item.fecha_fin_transaccion).format("DD/MM/YYYY HH:mm")}
       </Text>
       
       <Text style={styles.campeonatoText}>
         <Text style={styles.boldText}>Inicio Campeonato:</Text>{" "}
-        {moment.parseZone(item.fecha_inicio_campeonato).format("DD [de] MMMM, YYYY HH:mm [hrs]")}
+        {moment.parseZone(item.fecha_inicio_campeonato).format("DD/MM/YYYY HH:mm")}
       </Text>
       
       <Text style={styles.campeonatoText}>
         <Text style={styles.boldText}>Fin del campeonato:</Text>{" "}
-        {moment.parseZone(item.fecha_fin_campeonato).format("DD [de] MMMM, YYYY HH:mm [hrs]")}
+        {moment.parseZone(item.fecha_fin_campeonato).format("DD/MM/YYYY HH:mm")}
       </Text>
 
       <View style={styles.buttonsContainer}>

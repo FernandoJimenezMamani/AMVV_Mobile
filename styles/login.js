@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   logo: {
-    width: 100,
+    width: 200,
     height: 100,
     alignSelf: 'center',
     marginBottom: 20,
@@ -68,5 +68,21 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
+  homeButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    backgroundColor: '#143E42',
+    padding: 10,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  
+  homeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  
 });
   export default styles;

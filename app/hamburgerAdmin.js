@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput } from 'reac
 import { useRouter, useSegments } from 'expo-router';
 import { SessionProvider, useSession } from '../context/SessionProvider';
 import { MaterialIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const HamburgerMenu = ({ children, isLoggedIn }) => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -32,6 +33,10 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
     }
   };
 
+  const hasRole = (...roles) => {
+    return user && user.rol && roles.includes(user.rol.nombre);
+  };  
+
   return (
     <View style={styles.container}>
       {/* Barra de navegación superior */}
@@ -50,113 +55,140 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
 
       {/* Menú desplegable */}
       {menuVisible && (
+         <>
+
+         <View style={styles.overlay} onTouchStart={toggleMenu} />
         <View style={styles.menu}>
           {!isLoggedIn ? (
             /* Menú para usuarios NO autenticados */
             <>
-              <TouchableOpacity onPress={() => router.push('/partidos')}>
-                <Text style={styles.link}>Partidos</Text>
+              <TouchableOpacity onPress={() => {router.push('/club'); setMenuVisible(false); }} style={styles.linkButton}>
+                <Icon name="groups" size={24} color="#000" />
+                <Text style={styles.linkText}>Clubes</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/posiciones')}>
-                <Text style={styles.link}>Posiciones</Text>
+
+              <TouchableOpacity onPress={() => {router.push('/auth'); setMenuVisible(false);}} style={styles.linkButton}>
+                <Icon name="login" size={24} color="#000" />
+                <Text style={styles.linkText}>Iniciar Sesión</Text>
               </TouchableOpacity>
-              <View style={styles.searchContainer}>
-                <TextInput
-                  placeholder="Buscar..."
-                  style={styles.searchInput}
-                  placeholderTextColor="#ccc"
-                />
-              </View>
-              <TouchableOpacity onPress={() => router.push('/auth')}>
-                <Text style={styles.link}>Iniciar Sesión</Text>
-              </TouchableOpacity>
+
             </>
           ) : (
             /* Menú para usuarios autenticados (Admin) */
             <>
-              <TouchableOpacity onPress={() => router.push('/partidos')}>
-                <Text style={styles.link}>Inicio</Text>
+              <TouchableOpacity onPress={() => {router.push('/'); setMenuVisible(false);} }>
+              <View style={styles.mainLink}>
+                <MaterialIcons name="home" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                <Text style={styles.mainLinkText}>Inicio</Text>
+              </View>
+
               </TouchableOpacity>
 
-              {/* Sección Asociación */}
-              <View style={styles.menuItem}>
-                <TouchableOpacity onPress={() => toggleSection('asociacion')}>
-                  <Text style={styles.mainLink}>Asociación</Text>
-                </TouchableOpacity>
-                {expandedSection === 'asociacion' && (
-                  <View style={styles.subMenu}>
-                    <TouchableOpacity onPress={() => router.push('/campeonato')}>
-                      <Text style={styles.subMenuItem}>Campeonatos</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/club')}>
-                      <Text style={styles.subMenuItem}>Clubes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/categoria')}>
-                      <Text style={styles.subMenuItem}>Categorias</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/complejos')}>
-                      <Text style={styles.subMenuItem}>Complejos</Text>
-                    </TouchableOpacity>
+              {hasRole('PresidenteAsociacion') && (
+                <View style={styles.menuItem}>
+                  <TouchableOpacity onPress={() => toggleSection('asociacion')}>
+                  <View style={styles.mainLink}>
+                    <MaterialIcons name="sports" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                    <Text style={styles.mainLinkText}>Asociación</Text>
                   </View>
-                )}
-              </View>
+                  
+                  </TouchableOpacity>
+                  {expandedSection === 'asociacion' && (
+                    <View style={styles.subMenu}>
+                      <TouchableOpacity onPress={() => {router.push('/campeonato'); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Campeonatos</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() =>{ router.push('/club') ; setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Clubes</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push('/categoria') ; setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Categorías</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push('/complejos') ; setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Complejos</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
 
-              {/* Sección Miembros */}
-              <View style={styles.menuItem}>
-                <TouchableOpacity onPress={() => toggleSection('miembros')}>
-                  <Text style={styles.mainLink}>Miembros</Text>
-                </TouchableOpacity>
-                {expandedSection === 'miembros' && (
-                  <View style={styles.subMenu}>
-                    <TouchableOpacity onPress={() => router.push('/arbitro')}>
-                      <Text style={styles.subMenuItem}>Árbitros</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/jugador')}>
-                      <Text style={styles.subMenuItem}>Jugadores</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/presidente_club')}>
-                      <Text style={styles.subMenuItem}>Presidentes</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/delegado_club')}>
-                      <Text style={styles.subMenuItem}>Delegados</Text>
-                    </TouchableOpacity>
+              {hasRole('PresidenteAsociacion') && (
+                <View style={styles.menuItem}>
+                  <TouchableOpacity onPress={() => toggleSection('miembros')}>
+                  <View style={styles.mainLink}>
+                    <MaterialIcons name="group" size={20} color="#143E42" style={{ marginRight: 8 }}/>
+                    <Text style={styles.mainLinkText}>Miembros</Text>
                   </View>
-                )}
+                  </TouchableOpacity>
+                  {expandedSection === 'miembros' && (
+                    <View style={styles.subMenu}>
+                      <TouchableOpacity onPress={() => {router.push('/arbitro'); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Árbitros</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push('/jugador'); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Jugadores</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push('/presidente_club'); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Presidentes</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push('/delegado_club'); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Delegados</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
               </View>
+              )}
+              {/* Sección Miembros */}
+              
 
               {/* Sección Traspasos */}
-              <View style={styles.menuItem}>
-                <TouchableOpacity onPress={() => toggleSection('traspasos')}>
-                  <Text style={styles.mainLink}>Traspasos</Text>
-                </TouchableOpacity>
-                {expandedSection === 'traspasos' && (
-                  <View style={styles.subMenu}>
-                    <TouchableOpacity onPress={() => router.push('/traspaso/jugadores_traspaso')}>
-                      <Text style={styles.subMenuItem}>Fichar Jugadores</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/traspaso/solicitud_presidente')}>
-                      <Text style={styles.subMenuItem}>Ver Solicitudes P</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/traspaso/clubes_traspaso')}>
-                      <Text style={styles.subMenuItem}>Cambiar de Club</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.push('/traspaso/solicitud_jugador')}>
-                      <Text style={styles.subMenuItem}>Ver Solicitudes</Text>
-                    </TouchableOpacity>
+              {(hasRole('PresidenteClub') || hasRole('Jugador')) && (
+                <View style={styles.menuItem}>
+                  <TouchableOpacity onPress={() => toggleSection('traspasos')}>
+                  <View style={styles.mainLink}>
+                  <Text style={styles.mainLinkText}>Traspasos</Text>
                   </View>
-                )}
-              </View>
+                    
+                  </TouchableOpacity>
+                  {expandedSection === 'traspasos' && (
+                    <View style={styles.subMenu}>
+                      {hasRole('PresidenteClub') && (
+                        <>
+                          <TouchableOpacity onPress={() => {router.push('/traspaso/jugadores_traspaso'); setMenuVisible(false);}}>
+                            <Text style={styles.subMenuItem}>Fichar Jugadores</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => {router.push('/traspaso/solicitud_presidente'); setMenuVisible(false);}}>
+                            <Text style={styles.subMenuItem}>Ver Solicitudes P</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      {hasRole('Jugador') && (
+                        <>
+                          <TouchableOpacity onPress={() => {router.push('/traspaso/clubes_traspaso') ; setMenuVisible(false);}}>
+                            <Text style={styles.subMenuItem}>Cambiar de Club</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => {router.push('/traspaso/solicitud_jugador'); setMenuVisible(false);}}>
+                            <Text style={styles.subMenuItem}>Ver Solicitudes</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
+
               <TouchableOpacity 
                 style={styles.accountButton} 
                 onPress={handleProfileClick}
               >
                 <Text style={styles.accountButtonText}>
-                  <MaterialIcons name="account-circle" size={20} color="white" /> Mi Cuenta
+                  <MaterialIcons name="account-circle" size={20} alignItems={'center'} color="#fff" /> Mi Cuenta
                 </Text>
               </TouchableOpacity>
             </>
           )}
         </View>
+        </>
       )}
 
       {/* Contenido principal */}
@@ -176,21 +208,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#64848C',
+    backgroundColor: 'transparent',
     paddingHorizontal: 10,
-    paddingVertical: 15,
+    paddingVertical: 1,
+    marginBottom: -30,
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
+    width: 100,
+    height: 100,
+    marginRight: 5,
   },
   brand: {
-    color: '#fff',
+    color: '#143E42',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -200,38 +233,78 @@ const styles = StyleSheet.create({
   bar: {
     width: 25,
     height: 3,
-    backgroundColor: '#fff',
+    backgroundColor: '#143E42',
     marginVertical: 2,
   },
   menu: {
-    backgroundColor: '#1B2426',
+    position: 'absolute',  // 🔥 Flotante
+    top: 80,                // 🔥 Distancia desde arriba (ajustar según tu navbar)
+    right: 10,              // 🔥 Pegado al lado derecho
+    width: 250,             // 🔥 Ancho fijo
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    zIndex: 100,            // 🔥 Muy importante para que esté encima
   },
+  
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', // 🔥 Fondo negro transparente
+    zIndex: 99,
+  },
+  
   link: {
     fontSize: 16,
-    color: '#fff',
+    color: '#143E42',
     marginVertical: 10,
+    fontWeight: 'bold',
+
   },
   menuItem: {
-    marginVertical: 10,
+    marginVertical: 5, // más espacio entre secciones
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0', // línea tenue de separación
+    paddingBottom: 1,
   },
+  
   mainLink: {
-    fontSize: 18,
-    color: '#fff',
-    paddingVertical: 10,
+    fontSize: 16,
+    color: '#143E42',
+    marginVertical: 10,
+    fontWeight: 'bold',
+    flexDirection: 'row',   // 🔥 Poner ícono + texto en una fila
+    alignItems: 'center',
+  },
+  mainLinkText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#143E42',
   },
   subMenu: {
-    paddingLeft: 10,
-    backgroundColor: '#143E43',
-    borderRadius: 5,
+    backgroundColor: '#e8f0f2', // gris clarito azulado
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
     marginVertical: 5,
   },
   subMenuItem: {
     fontSize: 16,
-    color: '#fff',
-    paddingVertical: 5,
+    color: '#143E42',
+    paddingVertical: 8,
+
+
   },
+  
   content: {
     flex: 1,
     padding: 20,
@@ -240,11 +313,39 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   searchInput: {
-    backgroundColor: '#2C3E50',
+    backgroundColor: 'transparent',
     color: '#fff',
     padding: 10,
     borderRadius: 5,
   },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  
+  linkText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  accountButton: {
+    backgroundColor: '#143E42',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  accountButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  
 });
 
 export default HamburgerMenu;

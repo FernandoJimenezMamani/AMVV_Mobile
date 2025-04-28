@@ -60,15 +60,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#143E42',
     marginBottom: 15,
-    paddingLeft: 10,
+    textAlign: 'center', // 👈 Añadimos esto
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
+  
   matchCardLarge: {
     width: width * 0.85,
     backgroundColor: '#3D8FA4',
@@ -157,19 +158,52 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   matchCardSmall: {
-    width: '48%',
+    width: '80%',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
     elevation: 3,
-    marginHorizontal: '1%',
     marginBottom: 15,
+    marginVertical: 8,
+    marginHorizontal: '10%',
   },
   smallMatchContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  smallMatchResult: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#3D8FA4',
+    textAlign: 'center',
+    marginBottom: 5,
+  }, 
+  smallMatchPending: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#f39c12',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  liveIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 5,
+  },
+  liveDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    marginRight: 5,
+    animation: 'pulse 1.5s infinite',
+  },
+  liveText: {
+    color: 'red',
+    fontWeight: 'bold',
   },
   smallTeamContainer: {
     alignItems: 'center',
@@ -232,7 +266,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filterToggleButton: {
-    backgroundColor: '#64848C',
+    backgroundColor: '#3D8FA4',
     padding: 12,
     borderRadius: 8,
     marginHorizontal: 16,
@@ -249,6 +283,43 @@ const styles = StyleSheet.create({
     marginRight: 8,
     fontSize: 16,
   },
+  loadMoreButton: {
+    backgroundColor: '#3D8FA4',
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 10,
+    marginHorizontal: 50,
+  },
+  loadMoreText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  goToTopButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    backgroundColor: '#6CB4C8',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 100,
+  },
+  
+  goToTopText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  
 });
 
 export default styles;

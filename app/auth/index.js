@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import logo from '../../assets/logo.png';
 import styles from '../../styles/login';
 import Toast from 'react-native-toast-message';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -36,7 +37,7 @@ const InicioDeSesion = () => {
         setRoles(roles);
       } else {
         login({ user, token });
-        router.push('/campeonato'); // Cambiado de '/hamburgerAdmin' a '/campeonatos'
+        router.push('/'); 
         Toast.show({
                 type: 'success',
                 text1: 'Iniciaste sesion',
@@ -44,11 +45,18 @@ const InicioDeSesion = () => {
               });
       }
     } catch (error) {
-      console.error('Error al iniciar sesión:', error);
       if (error.response && error.response.status === 401) {
-        Alert.alert('Error', 'Correo o contraseña incorrectos');
+        Toast.show({
+          type: 'error',
+          text1: 'Correo o contraseña incorrectos',
+          position: 'bottom'
+        });
       } else {
-        Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
+        Toast.show({
+          type: 'error',
+          text1: 'Ocurrió un error al iniciar sesión',
+          position: 'bottom'
+        });
       }
     }
   };
@@ -75,7 +83,7 @@ const InicioDeSesion = () => {
         updateRole(selectedRole);
       }
 
-      router.push('/campeonato'); 
+      router.push('/'); 
       Toast.show({
         type: 'success',
         text1: 'Iniciaste sesion',
@@ -89,6 +97,9 @@ const InicioDeSesion = () => {
 
   return (
     <LinearGradient colors={['#64848C', '#1B2426']} style={styles.container}>
+      <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/')}>
+        <Icon name="home" size={32} color="#FFFFFF" />
+      </TouchableOpacity>
       <View style={styles.loginBox}>
         <Image source={logo} style={styles.logo} />
         <Text style={styles.title}>INICIO DE SESIÓN</Text>
