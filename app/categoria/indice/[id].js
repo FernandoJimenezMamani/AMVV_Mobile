@@ -64,8 +64,8 @@ const ListaCategorias = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#143E42" />
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#143E42" />
         </TouchableOpacity>
         <Text style={styles.title}>Seleccione una Categoría</Text>
       </View>

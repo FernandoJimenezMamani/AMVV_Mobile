@@ -9,6 +9,7 @@ import logo from '../../assets/logo.png';
 import styles from '../../styles/login';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { registerForPushNotifications } from '../../services/notification';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -37,7 +38,14 @@ const InicioDeSesion = () => {
         setRoles(roles);
       } else {
         login({ user, token });
-        router.push('/'); 
+        // Registrar token push después del login exitoso
+        try {
+          await registerForPushNotifications();
+        } catch (error) {
+          console.error('Error al registrar notificaciones push:', error);
+
+        }
+        router.push('/campeonato'); // Cambiado de '/hamburgerAdmin' a '/campeonatos'
         Toast.show({
                 type: 'success',
                 text1: 'Iniciaste sesion',

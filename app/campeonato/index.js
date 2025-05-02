@@ -101,25 +101,33 @@ const Campeonatos = () => {
 
   const handleGeneratePDF = async (fecha) => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/partidos/campeonatoPartidosPDF/${selectedCampeonatoId}?fecha=${fecha}`,
-        { responseType: 'blob' }
-      );
-
-      const fileUri = `${FileSystem.cacheDirectory}partidos_${selectedCampeonatoId}_${fecha}.pdf`;
+      // 1. Mostrar indicador de carga
+      Alert.alert('Generando PDF', 'Por favor espere...');
       
-      await FileSystem.writeAsStringAsync(fileUri, response.data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Partidos del Campeonato',
-        UTI: 'com.adobe.pdf',
-      });
+      // 2. Descargar el PDF
+      const downloadResumable = FileSystem.createDownloadResumable(
+        `${API_BASE_URL}/partidos/campeonatoPartidosPDF/${selectedCampeonatoId}?fecha=${fecha}`,
+        FileSystem.cacheDirectory + `partidos_${selectedCampeonatoId}_${fecha}.pdf`,
+        {}
+      );
+  
+      const { uri } = await downloadResumable.downloadAsync();
+      
+      // 3. Abrir el PDF con una aplicación compatible
+      const canOpen = await Linking.canOpenURL(uri);
+      if (canOpen) {
+        await Linking.openURL(uri);
+      } else {
+        // Si no se puede abrir directamente, compartir el archivo
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Partidos del Campeonato',
+          UTI: 'com.adobe.pdf',
+        });
+      }
     } catch (error) {
-      Alert.alert('Error', 'No se pudo generar el PDF');
       console.error('Error generando PDF:', error);
+      Alert.alert('Error', 'No se pudo generar el PDF');
     }
   };
 

@@ -9,7 +9,8 @@ import {
   Modal,
   Alert,
   Dimensions,
-  Button
+  Button,
+  Linking
 } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -25,15 +26,17 @@ import ConfirmModal from '../../../components/confirm_modal';
 import ReprogramacionModal from '../../../components/reprogramacion_modal';
 import PulseDot from '../../../components/PulseDot';
 import Club_defecto from '../../../assets/img/Club_defecto.png';
+const { width } = Dimensions.get('window');
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
-const { width } = Dimensions.get('window');
 
 const PartidoDetalle = () => {
   const params = useLocalSearchParams();
   const router = useRouter();
   
-  // Extraer parámetros correctamente
   const partidoId = params.partidoId;
   const campeonatoId = params.campeonatoId;
 
@@ -51,12 +54,56 @@ const PartidoDetalle = () => {
   const [showPerfilModal, setShowPerfilModal] = useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [showPlanilla, setShowPlanilla] = useState(false);
+  const [planillaUrl, setPlanillaUrl] = useState("");
+  const [showPlanillaModal, setShowPlanillaModal] = useState(false);
+const [planillaImage, setPlanillaImage] = useState(null);
+
+  // Función para conectar WebSocket
+  const connectWebSocket = () => {
+    const socket = new WebSocket(`${WEBSOCKET_URL}/partido/${partidoId}`);
+
+    socket.onopen = () => {
+      console.log('✅ WebSocket conectado para actualizaciones de partido');
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "actualizacion_resultado") {
+          console.log('📡 WebSocket: actualizando resultado del partido...');
+          fetchResultados();
+          fetchGanador();
+          fetchPartido();
+        }
+      } catch (error) {
+        console.error('❌ Error procesando mensaje WebSocket:', error);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error('⚠️ Error WebSocket:', error);
+    };
+
+    socket.onclose = (event) => {
+      console.log('🔴 WebSocket cerrado para partido');
+      if (event.code !== 1000) {
+        setTimeout(() => {
+          console.log('Reintentando conexión WebSocket...');
+          connectWebSocket();
+        }, 5000);
+      }
+    };
+
+    return socket;
+  };
 
   // Función para obtener datos del partido
   const fetchPartido = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/partidos/get_partido_completo/${partidoId}`);
       setPartido(response.data);
+      setPlanillaUrl(response.data.partido_image);
     } catch (error) {
       Alert.alert("Error", "Error al obtener los detalles del partido");
       console.error("Error al obtener los detalles del partido:", error);
@@ -96,7 +143,19 @@ const PartidoDetalle = () => {
     }
   };
 
-  // Efecto inicial para cargar datos
+  // Función para obtener campeonato
+  const fetchCampeonato = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/campeonatos/${campeonatoId}`);
+      return response.data;
+    } catch (error) {
+      Alert.alert("Error", "Error al obtener el campeonato");
+      console.error("Error al obtener el campeonato:", error);
+      return null;
+    }
+  };
+
+  // Efecto inicial para cargar datos y conectar WebSocket
   useEffect(() => {
     if (!partidoId) {
       Alert.alert("Error", "No se ha proporcionado un ID de partido válido");
@@ -105,6 +164,11 @@ const PartidoDetalle = () => {
 
     fetchPartido();
     fetchArbitros();
+    const socket = connectWebSocket();
+
+    return () => {
+      if (socket) socket.close();
+    };
   }, [partidoId]);
 
   // Efecto para cargar jugadores cuando hay datos del partido
@@ -241,10 +305,12 @@ const PartidoDetalle = () => {
       console.error("Error en la simulación de reprogramación:", error);
     }
   };
+
   const handleOpenConfirmModal = () => {
     setIsReprogramacionModalOpen(false);
     setIsConfirmModalOpen(true);
   };
+
   const handleFinalizarReprogramacion = async () => {
     try {
       await axios.post(`${API_BASE_URL}/partidos/confirmar-reprogramacion`, {
@@ -293,8 +359,8 @@ const PartidoDetalle = () => {
     if (!user || user.rol.nombre !== rolMapping.Arbitro) return false;
     return arbitros.some(arbitro => arbitro.arbitro_id === user.id);
   };
+
   const handleViewOnMap = () => {
-   
     if (!partido?.lugar_latitud || !partido?.lugar_longitud) {
       console.log("Datos del partido:", partido);
       Alert.alert(
@@ -311,6 +377,32 @@ const PartidoDetalle = () => {
       description: `Partido: ${partido.equipo_local_nombre} vs ${partido.equipo_visitante_nombre}`
     });
     setIsMapModalOpen(true);
+  };
+  const handleViewPlanilla = async () => {
+    if (!planillaUrl) {
+      Alert.alert("Error", "No hay planilla disponible para este partido");
+      return;
+    }
+  
+    try {
+      // Si es una URI local (file://) o una URL remota
+      if (planillaUrl.startsWith('file://')) {
+        setPlanillaImage({ uri: planillaUrl });
+      } else {
+        // Descargar imagen remota primero
+        const downloadResumable = FileSystem.createDownloadResumable(
+          planillaUrl,
+          FileSystem.cacheDirectory + 'planilla_partido.jpg',
+          {}
+        );
+        const { uri } = await downloadResumable.downloadAsync();
+        setPlanillaImage({ uri });
+      }
+      setShowPlanillaModal(true);
+    } catch (error) {
+      Alert.alert("Error", "No se pudo cargar la planilla del partido");
+      console.error("Error al cargar la planilla:", error);
+    }
   };
   // Renderizado condicional
   if (!partido) {
@@ -379,6 +471,34 @@ const PartidoDetalle = () => {
               </TouchableOpacity>
             </>
         )}
+
+        {/* Botón para ver planilla solo si el partido está finalizado y hay planilla */}
+        {partido.estado === estadosPartidoCampMapping.Finalizado && planillaUrl && (
+          <TouchableOpacity
+          style={styles.planillaButton}
+          onPress={handleViewPlanilla}
+        >
+          <Icon name="photo" size={20} color="white" />
+        </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Información básica */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoText}>
+          <Text style={styles.boldText}>Fecha:</Text> {formatDate(partido.fecha)}, {formatTime(partido.fecha)}
+        </Text>
+        <View style={styles.locationContainer}>
+          <Text style={styles.infoText}>
+            <Text style={styles.boldText}>Lugar del encuentro:</Text> {partido.lugar_nombre}
+          </Text>
+          <TouchableOpacity
+            style={styles.mapButton}
+            onPress={handleViewOnMap}
+          >
+            <Icon name="location-on" size={20} color="#3D8FA4" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Estado del partido */}
@@ -528,33 +648,57 @@ const PartidoDetalle = () => {
       {/* Árbitros */}
       <Text style={styles.sectionTitle}>Árbitros</Text>
       <View style={styles.refereesContainer}>
-        {arbitros.map(arbitro => (
-          <TouchableOpacity
-            key={arbitro.arbitro_id}
-            style={styles.refereeItem}
-            onPress={() => {
-              setSelectedPersonaId(arbitro.arbitro_id);
-              setShowPerfilModal(true);
-            }}
-          >
-            <Image
-              source={getImagenPerfil(arbitro)}
-              style={styles.refereeImage}
-            />
-            <Text>
-              {arbitro.arbitro_nombre} {arbitro.arbitro_apellido}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {arbitros.map(arbitro => (
+        <TouchableOpacity
+          key={arbitro.arbitro_id}
+          style={styles.refereeItem}
+          onPress={() => {
+            setSelectedPersonaId(arbitro.arbitro_id); // Establece el ID del árbitro seleccionado
+            setShowPerfilModal(true); // Abre el modal
+          }}
+        >
+          <Image
+            source={getImagenPerfil(arbitro)}
+            style={styles.refereeImage}
+          />
+          <Text>
+            {arbitro.arbitro_nombre} {arbitro.arbitro_apellido}
+          </Text>
+        </TouchableOpacity>
+      ))}
       </View>
-
+      <Modal
+        visible={showPlanillaModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPlanillaModal(false)}
+      >
+        <View style={styles.planillaModalOverlay}>
+          <View style={styles.planillaModalContainer}>
+            <TouchableOpacity 
+              style={styles.planillaCloseButton}
+              onPress={() => setShowPlanillaModal(false)}
+            >
+              <Icon name="close" size={24} color="white" />
+            </TouchableOpacity>
+            
+            {planillaImage && (
+              <Image 
+                source={planillaImage}
+                style={styles.planillaImage}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
       <MapaDetalleModal
         visible={isMapModalOpen}
         location={selectedLocation}
         onClose={() => setIsMapModalOpen(false)}
       />
 
-     <ReprogramacionModal
+      <ReprogramacionModal
         visible={isReprogramacionModalOpen}
         onClose={() => setIsReprogramacionModalOpen(false)}
         simulacion={simulacionReprogramacion}
@@ -563,7 +707,6 @@ const PartidoDetalle = () => {
         formatTime={formatTime}
       />
       
-
       <ConfirmModal
         visible={isConfirmModalOpen}
         onCancel={() => setIsConfirmModalOpen(false)}
@@ -571,11 +714,11 @@ const PartidoDetalle = () => {
         message={`¿Estás seguro de reprogramar el partido para el ${formatDate(simulacionReprogramacion?.nuevaFechaHora)} a las ${formatTime(simulacionReprogramacion?.nuevaFechaHora)} en ${simulacionReprogramacion?.nuevoLugar?.nombre}?`}
       />
 
-      <PerfilArbitroModal
-        visible={showPerfilModal}
-        onClose={() => setShowPerfilModal(false)}
-        arbitroId={selectedPersonaId}
-      />
+    <PerfilArbitroModal
+      isOpen={showPerfilModal}
+      onClose={() => setShowPerfilModal(false)}
+      arbitroId={selectedPersonaId}
+    />
     </ScrollView>
   );
 };
