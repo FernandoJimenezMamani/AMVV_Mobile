@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Modal} from 'react-native';
+import { View, Text, Switch, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Modal} from 'react-native';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -9,7 +9,7 @@ import ConfirmModal from '../../components/confirm_modal';
 import RegistroComplejoModal from './registrar';
 import EditarComplejoModal from './editar';
 import MapaDetalleModal from '../../components/mapa_detalle';
-
+import { Picker } from '@react-native-picker/picker';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaLugar = () => {
@@ -22,7 +22,8 @@ const ListaLugar = () => {
   const [selectedComplejoId, setSelectedComplejoId] = useState(null);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
-
+  const [filterState, setFilterState] = useState('No filtrar');
+  const [filteredComplejos, setFilteredComplejos] = useState([]);
   useEffect(() => {
     fetchComplejos();
   }, []);
@@ -43,6 +44,22 @@ const ListaLugar = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+      applyFilters();
+    }, [complejos, filterState]);
+  
+    const applyFilters = () => {
+      let filtered = [...complejos];
+    
+      if (filterState !== 'No filtrar') {
+        filtered = filtered.filter((club) =>
+          filterState === 'Activo' ? club.eliminado === 'N' : club.eliminado === 'S'
+        );
+      }
+    
+      setFilteredComplejos(filtered);
+    };  
 
   const handleDeleteComplejo = async () => {
     try {
@@ -100,9 +117,19 @@ const ListaLugar = () => {
     );
   }
 
+  const handleActivateComplejo = async (id) => {
+    try {
+      await axios.put(`${API_BASE_URL}/lugar/activate_complejo/${id}`);
+      toast.success('Complejo activado exitosamente');
+      fetchComplejos();
+    } catch (error) {
+      toast.error('Error al activar el complejo');
+      console.error('Error al activar complejo:', error);
+    }
+  };
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+
         <Text style={styles.title}>Complejos Deportivos</Text>
         <TouchableOpacity 
           style={styles.addButton}
@@ -110,43 +137,51 @@ const ListaLugar = () => {
         >
           <Text style={styles.addButtonText}>+ Nuevo Complejo</Text>
         </TouchableOpacity>
-      </View>
 
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={filterState}
+          onValueChange={(value) => setFilterState(value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="No filtrar" value="No filtrar" />
+          <Picker.Item label="Activo" value="Activo" />
+          <Picker.Item label="Inactivo" value="Inactivo" />
+        </Picker>
+      </View>
       <ScrollView contentContainerStyle={styles.listContainer}>
         {complejos.length === 0 ? (
           <Text style={styles.emptyText}>No hay complejos registrados</Text>
         ) : (
-          complejos.map(complejo => (
+          filteredComplejos.map(complejo => (
             <View key={complejo.id.toString()} style={styles.itemContainer}>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemTitle}>{complejo.nombre}</Text>
-                <Text style={styles.itemAddress}>{complejo.direccion}</Text>
               </View>
               
-              <View style={styles.itemActions}>
+              <View style={styles.actions}>
                 <TouchableOpacity 
                   style={styles.actionButton}
                   onPress={() => handleViewOnMap(complejo)}
                 >
-                  <MaterialIcons name="map" size={24} color="#4285F4" />
+                  <MaterialIcons name="map" size={24} color="#579FA6" />
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
                   style={styles.actionButton}
                   onPress={() => handleEditPress(complejo.id)}
                 >
-                  <MaterialIcons name="edit" size={24} color="#FBBC05" />
+                  <MaterialIcons name="edit" size={24} color="#9DAC42" />
                 </TouchableOpacity>
                 
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => {
-                    setComplejoToDelete(complejo.id);
-                    setShowConfirm(true);
-                  }}
-                >
-                  <MaterialIcons name="delete" size={24} color="#EA4335" />
-                </TouchableOpacity>
+                <Switch
+                    value={complejo.eliminado !== 'S'}
+                    onValueChange={() =>
+                      complejo.eliminado === 'S'
+                        ? handleActivateComplejo(complejo.id)
+                        : handleDeleteClick(complejo.id)
+                    }
+                  />
               </View>
             </View>
           ))

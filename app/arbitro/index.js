@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Switch,
+  TextInput,
 } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -16,9 +17,11 @@ import ConfirmModal from '../../components/confirm_modal';
 import RegistrarArbitroModal from './registrar'; // Modal para registrar
 import EditarArbitroModal from './editar'; // Modal para editar
 import styles from '../../styles/index_tabla';
-
+import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
+import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import PerfilArbitroModal from './perfil/[id]';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-const DEFAULT_USER_IMAGE = 'https://via.placeholder.com/150'; // Imagen por defecto
 
 const ListaArbitro = () => {
   const [arbitros, setArbitros] = useState([]);
@@ -29,7 +32,12 @@ const ListaArbitro = () => {
   const [showEditarModal, setShowEditarModal] = useState(false); // Controla la visibilidad del modal de edición
   const [selectedArbitroId, setSelectedArbitroId] = useState(null); // ID del árbitro seleccionado
   const router = useRouter();
-
+  const [visibleArbitros, setVisibleArbitros] = useState(5);
+  const flatListRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredArbitros, setFilteredArbitros] = useState([]);
+  const [perfilArtbitroVisible, setPerfilArbitroVisible] = useState(false);
+  const [arbitroIdPerfil, setArbitroIdPerfil] = useState(null);
   useEffect(() => {
     fetchArbitros();
   }, []);
@@ -45,6 +53,17 @@ const ListaArbitro = () => {
     }
   };
 
+  useEffect(() => {
+    applySearchFilter();
+  }, [searchTerm, arbitros]);
+  
+  const applySearchFilter = () => {
+    const filtered = arbitros.filter((a) =>
+      `${a.nombre} ${a.apellido}`.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredArbitros(filtered);
+  };
+  
   const handleEditClick = (arbitroId) => {
     setSelectedArbitroId(arbitroId); // Establece el ID del árbitro a editar
     setShowEditarModal(true); // Abre el modal de edición
@@ -94,14 +113,33 @@ const ListaArbitro = () => {
     setArbitroToDelete(null);
   };
 
-  const handleProfileClick = (id) => {
-    router.push(`/arbitros/perfil/${id}`);
+  const handleProfileClick = (jugadorId) => {
+    setArbitroIdPerfil(jugadorId);
+    setPerfilArbitroVisible(true);
   };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />;
   }
 
+  const getImagenPerfil = (arbitro) => {
+    if (arbitro.persona_imagen) {
+      return { uri: arbitro.persona_imagen }; 
+    }
+    return arbitro.genero_persona === 'V'
+      ? defaultUserMenIcon
+      : defaultUserWomenIcon;
+  };
+  
+  const handleLoadMore = () => {
+    setVisibleArbitros((prev) => prev + 5);
+  };
+  
+  const scrollToTop = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Árbitros</Text>
@@ -110,34 +148,53 @@ const ListaArbitro = () => {
       <TouchableOpacity style={styles.addButton} onPress={handleRegistrarClick}>
         <Text style={styles.addButtonText}>+1 Árbitro</Text>
       </TouchableOpacity>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Buscar por nombre"
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+      />
 
       <FlatList
-        data={arbitros}
+        ref={flatListRef}
+        data={filteredArbitros.slice(0, visibleArbitros)}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.clubContainer}>
             <Image
-              source={{ uri: item.persona_imagen || DEFAULT_USER_IMAGE }}
+              source={getImagenPerfil(item)}
               style={styles.clubImage}
             />
             <View style={styles.clubInfo}>
               <Text style={styles.clubName}>{item.nombre} {item.apellido}</Text>
               <Text style={styles.clubDescription}>C.I: {item.ci}</Text>
-              <Text style={styles.clubDescription}>Correo: {item.correo}</Text>
+              
             </View>
             <View style={styles.actions}>
+               <TouchableOpacity onPress={() => handleProfileClick(item.id)}>
+                  <MaterialIcons name="remove-red-eye" size={24} color="#579FA6" />
+                  </TouchableOpacity>
               <TouchableOpacity onPress={() => handleEditClick(item.id)}>
-                <MaterialIcons name="edit" size={24} color="#FFC107" />
+                <MaterialIcons name="edit" size={24} color="#9DAC42" />
               </TouchableOpacity>
-              <Switch
-                value={item.eliminado !== 'S'}
-                onValueChange={() =>
-                  item.eliminado === 'S' ? handleActivateUser(item.id) : handleDeleteClick(item.id)
-                }
-              />
+
             </View>
           </View>
         )}
+        ListFooterComponent={
+          <>
+            {visibleArbitros < arbitros.length && (
+              <TouchableOpacity style={styles.loadMoreButton} onPress={handleLoadMore}>
+                <Text style={styles.loadMoreText}>Cargar más</Text>
+              </TouchableOpacity>
+            )}
+            {visibleArbitros > 5 && (
+              <TouchableOpacity style={styles.goToTopButton} onPress={scrollToTop}>
+                <Icon style={styles.goToTopText} name={'keyboard-arrow-up'}/>
+              </TouchableOpacity>
+            )}
+          </>
+        }
       />
 
       {/* Modal de registro */}
@@ -151,8 +208,8 @@ const ListaArbitro = () => {
       <EditarArbitroModal
         isOpen={showEditarModal}
         onClose={handleCloseEditarModal}
-        arbitroId={selectedArbitroId} // Pasar el ID del árbitro a editar
-        onArbitroUpdated={fetchArbitros} // Recargar la lista después de editar
+        personaId={selectedArbitroId} // Pasar el ID del árbitro a editar
+        onPersonaUpdated={fetchArbitros} // Recargar la lista después de editar
       />
 
       {/* Modal de confirmación para eliminar */}
@@ -161,6 +218,12 @@ const ListaArbitro = () => {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         message="¿Seguro que quieres eliminar este árbitro?"
+      />
+
+      <PerfilArbitroModal
+        isOpen={perfilArtbitroVisible}
+        onClose={() => setPerfilArbitroVisible(false)}
+        id={arbitroIdPerfil}
       />
     </View>
   );

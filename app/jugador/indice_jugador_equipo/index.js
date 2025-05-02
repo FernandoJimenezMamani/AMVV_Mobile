@@ -246,7 +246,6 @@ const ListaJugadoresEquipo = () => {
       <Modal
         visible={showConfirmRegister}
         transparent={true}
-        animationType="slide"
         onRequestClose={() => setShowConfirmRegister(false)}
       >
         <View style={{

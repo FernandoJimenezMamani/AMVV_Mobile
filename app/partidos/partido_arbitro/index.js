@@ -7,8 +7,7 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
-  ScrollView,
-  Picker
+  ScrollView
 } from 'react-native';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -19,7 +18,7 @@ import PendingIcon from 'react-native-vector-icons/MaterialIcons';
 import CheckCircleIcon from 'react-native-vector-icons/MaterialIcons';
 import Club_defecto from '../../../assets/img/Default_Imagen_Club.webp';
 import styles from '../../../styles/partidos/index_partido';
-
+import { SessionProvider, useSession } from '../../../context/SessionProvider';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PartidosArbitroList = () => {
@@ -30,7 +29,7 @@ const PartidosArbitroList = () => {
   const [loading, setLoading] = useState(true);
   const [resultados, setResultados] = useState({});
   const navigation = useRouter();
-
+  const { user, token, logout } = useSession();
   useEffect(() => {
     const fetchCampeonatos = async () => {
       try {
@@ -46,9 +45,9 @@ const PartidosArbitroList = () => {
 
   useEffect(() => {
     const fetchPartidos = async () => {
-      if (!campeonatoId) return;
+      if (!user?.id || !campeonatoId) return;
       try {
-        const response = await axios.get(`${API_BASE_URL}/arbitro/partidos/arbitro/${campeonatoId}`);
+        const response = await axios.get(`${API_BASE_URL}/arbitro/partidos/arbitro/${user.id}/${campeonatoId}`);
         setPartidos(response.data);
         setLoading(false);
       } catch (error) {
@@ -116,7 +115,8 @@ const PartidosArbitroList = () => {
       pathname: 'partidos/detalle_partido',
       params: { 
         partidoId,
-        campeonatoId
+        campeonatoId,
+        
       }
     });
   };
@@ -232,31 +232,14 @@ const PartidosArbitroList = () => {
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Agrupar por:</Text>
           <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={agrupacion}
-              style={styles.picker}
-              onValueChange={(itemValue) => setAgrupacion(itemValue)}
-            >
-              <Picker.Item label="No Agrupar" value="todos" />
-              <Picker.Item label="Fecha" value="fecha" />
-              <Picker.Item label="Lugar" value="lugar" />
-              <Picker.Item label="Fecha y Lugar" value="fecha_lugar" />
-            </Picker>
+
           </View>
         </View>
 
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Filtrar por estado:</Text>
           <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={estadoFiltro}
-              style={styles.picker}
-              onValueChange={(itemValue) => setEstadoFiltro(itemValue)}
-            >
-              <Picker.Item label="Todos" value="todos" />
-              <Picker.Item label="Pendientes" value={estadosPartidoCampMapping.Confirmado} />
-              <Picker.Item label="Jugados" value={estadosPartidoCampMapping.Finalizado} />
-            </Picker>
+
           </View>
         </View>
       </View>

@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   addButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#3D8FA4',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -57,7 +57,9 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: 12,
+    alignItems: 'center',
+    justifyContent: 'flex-start', // o 'space-between' si querés más separación
+    gap: 10
   },
   // Agrega esto a tus estilos (index_tabla.js)
 loadingContainer: {
@@ -186,6 +188,57 @@ noResultsText: {
   fontSize: 16,
   color: '#666',
 },
+loadMoreButton: {
+  backgroundColor: '#3D8FA4',
+  padding: 10,
+  borderRadius: 8,
+  alignItems: 'center',
+  marginVertical: 10,
+  marginHorizontal: 50,
+},
+loadMoreText: {
+  color: 'white',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+
+goToTopButton: {
+  position: 'absolute',
+  bottom: 30,
+  right: 20,
+  backgroundColor: '#6CB4C8',
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 30,
+  elevation: 5,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  zIndex: 100,
+},
+
+goToTopText: {
+  color: 'white',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+searchInput: {
+  borderColor: '#ccc',
+  borderWidth: 1,
+  borderRadius: 8,
+  padding: 10,
+  marginVertical: 10,
+},
+pickerContainer: {
+  marginVertical: 10,
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  paddingHorizontal: 10,
+},
+
+
 });
 
 export default styles;

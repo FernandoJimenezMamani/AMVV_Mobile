@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,9 @@ import EditarDelegadoModal from './editar'; // Modal para editar
 import { Picker } from '@react-native-picker/picker';
 import styles from '../../styles/index_tabla'; // Importar estilos desde aquí
 import { MaterialIcons } from '@expo/vector-icons';
-
+import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
+import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
+import PerfilDelegadoModal from './perfil/[id]';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaDelegadoClub = () => {
@@ -31,7 +33,10 @@ const ListaDelegadoClub = () => {
   const [filterState, setFilterState] = useState('No filtrar');
   const [searchPresidente, setSearchPresidente] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const [visibleDelegados, setVisibleDelegados] = useState(5);
+  const flatListRef = useRef(null);
+  const [perfilDelegadoVisible, setPerfilDelegadoVisible] = useState(false);
+  const [delegadoIdPerfil, setDelegadoIdPerfil] = useState(null);
   useEffect(() => {
     fetchPresidentes();
   }, []);
@@ -122,37 +127,50 @@ const ListaDelegadoClub = () => {
     setPersonaToDelete(null);
   };
 
-  const handleProfileClick = (id) => {
-    // Navegar a la pantalla de perfil del delegado
-    // navigation.navigate('Perfil', { id });
+  const handleProfileClick = (jugadorId) => {
+    setDelegadoIdPerfil(jugadorId);
+    setPerfilDelegadoVisible(true);
   };
+
+  const handleLoadMore = () => {
+    setVisibleDelegados((prev) => prev + 5);
+  };
+  
+  const scrollToTop = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
+  };
+
+   const getImagenPerfil = (arbitro) => {
+      if (arbitro.persona_imagen) {
+        return { uri: arbitro.persona_imagen }; 
+      }
+      return arbitro.genero === 'V'
+        ? defaultUserMenIcon
+        : defaultUserWomenIcon;
+    };
 
   const renderItem = ({ item }) => (
     <View style={styles.clubContainer}>
       <Image
-        source={{ uri: item.persona_imagen }}
+        source={getImagenPerfil(item)}
         style={styles.clubImage}
       />
       <View style={styles.clubInfo}>
         <Text style={styles.clubName}>{item.nombre} {item.apellido}</Text>
-        <Text style={styles.clubDescription}>Fecha de Nacimiento: {new Date(item.fecha_nacimiento).toLocaleDateString()}</Text>
         <Text style={styles.clubDescription}>C.I: {item.ci}</Text>
-        <Text style={styles.clubDescription}>Correo: {item.correo}</Text>
-        <Text style={styles.clubDescription}>Club: {item.nombre_club}</Text>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity onPress={() => handleProfileClick(item.id)}>
-          <MaterialIcons name="remove-red-eye" size={24} color="#4CAF50" />
+          <MaterialIcons name="remove-red-eye" size={24} color="#579FA6" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleEditClick(item.id)}>
-          <MaterialIcons name="edit" size={24} color="#FFC107" />
+          <MaterialIcons name="edit" size={24} color="#9DAC42" />
         </TouchableOpacity>
-        <Switch
-          value={item.eliminado !== 'S'}
-          onValueChange={() => handleActivateUser(item.id, item.eliminado)}
-        />
       </View>
     </View>
+    
   );
 
   return (
@@ -162,15 +180,6 @@ const ListaDelegadoClub = () => {
         <TouchableOpacity style={styles.addButton} onPress={handleRegistrarClick}>
           <Text style={styles.addButtonText}>+1 Delegado</Text>
         </TouchableOpacity>
-        <Picker
-          selectedValue={filterState}
-          style={styles.picker}
-          onValueChange={(value) => setFilterState(value)}
-        >
-          <Picker.Item label="No filtrar" value="No filtrar" />
-          <Picker.Item label="Activo" value="Activo" />
-          <Picker.Item label="Inactivo" value="Inactivo" />
-        </Picker>
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar por nombre"
@@ -183,11 +192,28 @@ const ListaDelegadoClub = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
-          data={filteredPresidentes}
+          ref={flatListRef}
+          data={filteredPresidentes.slice(0, visibleDelegados)}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
+          ListFooterComponent={
+            <>
+              {visibleDelegados < filteredPresidentes.length && (
+                <TouchableOpacity style={styles.loadMoreButton} onPress={handleLoadMore}>
+                  <Text style={styles.loadMoreText}>Cargar más</Text>
+                </TouchableOpacity>
+              )}
+              {visibleDelegados > 5 && (
+                <TouchableOpacity style={styles.goToTopButton} onPress={scrollToTop}>
+                  <Icon style={styles.goToTopText} name={'keyboard-arrow-up'} size={24} />
+                </TouchableOpacity>
+              )}
+            </>
+          }
         />
+        
       )}
+      
 
       {/* Modal de registro */}
       <RegistrarDelegadoModal
@@ -210,6 +236,11 @@ const ListaDelegadoClub = () => {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         message="¿Seguro que quieres eliminar esta persona?"
+      />
+      <PerfilDelegadoModal
+        isOpen={perfilDelegadoVisible}
+        onClose={() => setPerfilDelegadoVisible(false)}
+        delegadoId={delegadoIdPerfil}
       />
     </View>
   );

@@ -29,13 +29,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   fileButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#fff',
     padding: 10,
     borderRadius: 5,
     marginBottom: 15,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
   },
   fileButtonText: {
-    color: '#fff',
+    color: 'black',
     fontSize: 16,
   },
   imagePreview: {
@@ -50,14 +51,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cancelButton: {
-    backgroundColor: '#d9534f', // Rojo
+    backgroundColor: '#9e4444', // Rojo
     padding: 10,
     borderRadius: 5,
     width: '45%',
     alignItems: 'center',
   },
   submitButton: {
-    backgroundColor: '#5cb85c', // Verde
+    backgroundColor: '#3D8FA4', // Verde
     padding: 10,
     borderRadius: 5,
     width: '45%',

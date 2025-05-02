@@ -7,6 +7,8 @@ import {
   Image,
   Modal,
   ActivityIndicator,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -19,70 +21,35 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    fecha_nacimiento: new Date().toISOString().split('T')[0],
-    ci: '',
-    direccion: '',
-    correo: '',
-    genero: 'V',
-    roles: [],
-    club_jugador_id: null,
-    club_presidente_id: null,
-    club_delegado_id: null,
-    image: null,
+    nombre: '', apellido: '', fecha_nacimiento: '', ci: '', direccion: '',
+    correo: '', genero: 'V', roles: [], image: null
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Función para obtener los datos del árbitro
+  useEffect(() => {
+    if (isOpen && personaId) fetchArbitro();
+  }, [isOpen, personaId]);
+
   const fetchArbitro = async () => {
-    if (!personaId) return; // Si no hay personaId, no hacemos nada
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/arbitro/get_arbitroById/${personaId}`);
-      const rolesArray = Array.isArray(response.data.roles)
-        ? response.data.roles
-        : response.data.roles.split(',').map((role) => role.trim());
-
-      // Actualizamos el estado con los datos recuperados
-      setFormData({
-        nombre: response.data.nombre,
-        apellido: response.data.apellido,
-        fecha_nacimiento: response.data.fecha_nacimiento.split('T')[0],
-        ci: response.data.ci,
-        direccion: response.data.direccion,
-        correo: response.data.correo,
-        genero: response.data.genero,
-        roles: rolesArray,
-        club_jugador_id: response.data.club_jugador || null,
-        club_presidente_id: response.data.club_presidente || null,
-        club_delegado_id: response.data.club_delegado || null,
-        image: response.data.persona_imagen,
-      });
-
-      // Si hay una imagen, la mostramos en el preview
-      if (response.data.persona_imagen) {
-        setImagePreview(response.data.persona_imagen);
-      }
-    } catch (error) {
-      console.error('Error al obtener los datos del árbitro:', error);
+      const res = await axios.get(`${API_BASE_URL}/arbitro/get_arbitroById/${personaId}`);
+      const rolesArray = Array.isArray(res.data.roles)
+        ? res.data.roles
+        : res.data.roles.split(',').map(r => r.trim());
+      setFormData({ ...res.data, roles: rolesArray, fecha_nacimiento: res.data.fecha_nacimiento.split('T')[0] });
+      if (res.data.persona_imagen) setImagePreview(res.data.persona_imagen);
+    } catch (err) {
+      Alert.alert('Error', 'No se pudo cargar el árbitro.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Ejecutamos fetchArbitro cuando el modal se abre o cuando personaId cambia
-  useEffect(() => {
-    if (isOpen && personaId) {
-      fetchArbitro();
-    }
-  }, [isOpen, personaId]);
-
-  // Función para seleccionar una imagen
-  const handleSelectImage = async () => {
+  const handleImageSelect = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -90,74 +57,38 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
         aspect: [1, 1],
         quality: 0.8,
       });
-
       if (!result.canceled) {
-        const manipulatedImage = await ImageManipulator.manipulateAsync(
-          result.assets[0].uri,
-          [{ resize: { width: 300, height: 300 } }],
-          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
-        );
-
-        setCroppedImage(manipulatedImage.uri);
-        setImagePreview(manipulatedImage.uri);
+        const img = await ImageManipulator.manipulateAsync(result.assets[0].uri, [{ resize: { width: 300, height: 300 } }], { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG });
+        setCroppedImage(img.uri);
+        setImagePreview(img.uri);
       }
-    } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo seleccionar la imagen.');
     }
   };
 
-  // Función para manejar el cambio de fecha
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      setFormData({ ...formData, fecha_nacimiento: formattedDate });
-    }
-  };
-
-  // Función para enviar los datos actualizados
   const handleSubmit = async () => {
     const data = new FormData();
-
-    data.append('nombre', formData.nombre || '');
-    data.append('apellido', formData.apellido || '');
-    data.append('fecha_nacimiento', formData.fecha_nacimiento || '');
-    data.append('ci', formData.ci || '');
-    data.append('direccion', formData.direccion || '');
-    data.append('correo', formData.correo || '');
-    data.append('genero', formData.genero || 'V');
-    data.append('roles', formData.roles.join(',') || '');
-    data.append('club_jugador_id', formData.club_jugador_id || '');
-    data.append('club_presidente_id', formData.club_presidente_id || '');
-    data.append('club_delegado_id', formData.club_delegado_id || '');
-
+    Object.entries(formData).forEach(([k, v]) => {
+      if (k === 'roles') data.append(k, v.join(','));
+      else if (v) data.append(k, v);
+    });
     if (croppedImage) {
-      const file = {
-        uri: croppedImage,
-        name: 'photo.jpg',
-        type: 'image/jpeg',
-      };
-      data.append('image', file);
+      data.append('image', { uri: croppedImage, name: 'photo.jpg', type: 'image/jpeg' });
     }
 
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/persona/update_persona_with_roles/${personaId}`,
-        data,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      );
-      console.log('Respuesta del servidor:', response.data);
-      onPersonaUpdated(); // Actualizar la lista de árbitros
-      onClose(); // Cerrar el modal
-    } catch (error) {
-      console.error(
-        'Error al actualizar el árbitro:',
-        error.response ? error.response.data : error.message
-      );
+      await axios.put(`${API_BASE_URL}/persona/update_persona_with_roles/${personaId}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onPersonaUpdated();
+      onClose();
+    } catch (err) {
+      Alert.alert('Error', 'No se pudo actualizar el árbitro.');
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <Modal visible={isOpen} transparent animationType="slide">
@@ -167,8 +98,8 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
           {loading ? (
             <ActivityIndicator size="large" color="#0000ff" />
           ) : (
-            <>
-              <TouchableOpacity onPress={handleSelectImage} style={styles.fileButton}>
+            <ScrollView>
+              <TouchableOpacity onPress={handleImageSelect} style={styles.fileButton}>
                 {imagePreview ? (
                   <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
                 ) : (
@@ -176,59 +107,30 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
                 )}
               </TouchableOpacity>
 
-              <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={formData.nombre}
-                onChangeText={(text) => setFormData({ ...formData, nombre: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Apellido"
-                value={formData.apellido}
-                onChangeText={(text) => setFormData({ ...formData, apellido: text })}
-              />
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                style={styles.input}
-              >
-                <Text>{formData.fecha_nacimiento || 'Seleccionar fecha de nacimiento'}</Text>
+              {['nombre', 'apellido', 'ci', 'direccion', 'correo'].map((f, i) => (
+                <TextInput key={i} style={styles.input} placeholder={f} value={formData[f]} onChangeText={(t) => setFormData({ ...formData, [f]: t })} />
+              ))}
+
+              <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+                <Text>{formData.fecha_nacimiento}</Text>
               </TouchableOpacity>
               {showDatePicker && (
                 <DateTimePicker
                   value={new Date(formData.fecha_nacimiento)}
                   mode="date"
                   display="default"
-                  onChange={handleDateChange}
+                  onChange={(e, d) => {
+                    setShowDatePicker(false);
+                    if (d) setFormData({ ...formData, fecha_nacimiento: d.toISOString().split('T')[0] });
+                  }}
                 />
               )}
-              <TextInput
-                style={styles.input}
-                placeholder="Cédula"
-                value={formData.ci}
-                onChangeText={(text) => setFormData({ ...formData, ci: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Dirección"
-                value={formData.direccion}
-                onChangeText={(text) => setFormData({ ...formData, direccion: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Correo"
-                value={formData.correo}
-                onChangeText={(text) => setFormData({ ...formData, correo: text })}
-                keyboardType="email-address"
-              />
-              <Picker
-                selectedValue={formData.genero}
-                style={styles.picker}
-                onValueChange={(itemValue) => setFormData({ ...formData, genero: itemValue })}
-              >
+
+              <Picker selectedValue={formData.genero} style={styles.picker} onValueChange={(v) => setFormData({ ...formData, genero: v })}>
                 <Picker.Item label="Varón" value="V" />
                 <Picker.Item label="Dama" value="D" />
               </Picker>
+
               <View style={styles.buttonContainer}>
                 <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
                   <Text style={styles.buttonText}>Cancelar</Text>
@@ -237,7 +139,7 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
                   <Text style={styles.buttonText}>Guardar</Text>
                 </TouchableOpacity>
               </View>
-            </>
+            </ScrollView>
           )}
         </View>
       </View>

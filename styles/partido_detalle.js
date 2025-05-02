@@ -40,17 +40,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#3D8FA4',
     padding: 10,
     borderRadius: 5,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 10,
+    textAlign: 'center',
+    justifyContent: 'center',
   },
   reprogramButton: {
     backgroundColor: '#9DAC42',
     padding: 10,
     borderRadius: 5,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 10,
+    textAlign: 'center',
+    justifyContent: 'center',
+    marginTop:20,
   },
   editButton: {
     backgroundColor: '#3D8FA4',
@@ -169,6 +176,7 @@ const styles = StyleSheet.create({
   scoreTable: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 10,
   },
   scoreColumn: {
     flex: 1,
@@ -176,6 +184,14 @@ const styles = StyleSheet.create({
   teamTitle: {
     fontWeight: 'bold',
     marginBottom: 5,
+    flex: 1,
+  },
+  teamTitleV: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    flex: 1,
+    textAlign: 'right',
+    
   },
   sectionTitle: {
     fontSize: 18,
@@ -186,10 +202,14 @@ const styles = StyleSheet.create({
   playersContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginTop: 15,
   },
   playersColumn: {
     flex: 1,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    padding: 5,
   },
   playerRow: {
     flexDirection: 'row',
@@ -199,8 +219,13 @@ const styles = StyleSheet.create({
   playerName: {
     flex: 1,
   },
+  playerNameV:{
+    flex: 1,
+    textAlign: 'right'
+  },
   cardsContainer: {
     flexDirection: 'row',
+    marginHorizontal: 5,
   },
   card: {
     width: 14,
@@ -293,6 +318,9 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     backgroundColor: '#28a745',
+  },
+  liveTittle:{
+    marginVertical: 120,
   },
 });
 

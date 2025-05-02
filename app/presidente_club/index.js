@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, Alert, ActivityIndicator, TextInput, Switch } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -8,7 +8,10 @@ import RegistrarPresidenteModal from './registrar';
 import EditarPresidenteModal from './editar';
 import styles from '../../styles/index_tabla';
 import { Picker } from '@react-native-picker/picker';
-
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
+import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
+import PerfilPresidenteModal from './perfil/[id]';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaPresidenteClub = () => {
@@ -21,7 +24,10 @@ const ListaPresidenteClub = () => {
   const [filterState, setFilterState] = useState('No filtrar');
   const [searchPresidente, setSearchPresidente] = useState('');
   const router = useRouter();
-
+  const [visiblePresidentes, setVisiblePresidentes] = useState(5);
+  const flatListRef = useRef(null);
+  const [perfilPresidenteVisible, setPerfilPresidenteVisible] = useState(false);
+  const [presidenteIdPerfil, setPresidenteIdPerfil] = useState(null);
   useEffect(() => {
     fetchPresidentes();
   }, []);
@@ -87,9 +93,29 @@ const ListaPresidenteClub = () => {
     }
   };
 
-  const handleProfileClick = (presidenteId) => {
-    router.push(`/persona/perfil/${presidenteId}`);
+  const handleProfileClick = (jugadorId) => {
+    setPresidenteIdPerfil(jugadorId);
+    setPerfilPresidenteVisible(true);
   };
+
+  const handleLoadMore = () => {
+    setVisiblePresidentes((prev) => prev + 5);
+  };
+  
+  const scrollToTop = () => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    }
+  };
+
+  const getImagenPerfil = (arbitro) => {
+      if (arbitro.persona_imagen) {
+        return { uri: arbitro.persona_imagen }; 
+      }
+      return arbitro.genero === 'V'
+        ? defaultUserMenIcon
+        : defaultUserWomenIcon;
+    };
 
   if (loading) {
     return <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />;
@@ -104,41 +130,44 @@ const ListaPresidenteClub = () => {
       </TouchableOpacity>
 
       <View style={styles.filtersContainer}>
-        <Picker selectedValue={filterState} style={styles.filterPicker} onValueChange={(value) => setFilterState(value)}>
-          <Picker.Item label="No filtrar" value="No filtrar" />
-          <Picker.Item label="Activo" value="Activo" />
-          <Picker.Item label="Inactivo" value="Inactivo" />
-        </Picker>
-
         <TextInput style={styles.searchInput} placeholder="Buscar por nombre" value={searchPresidente} onChangeText={(text) => setSearchPresidente(text)} />
       </View>
 
       <FlatList
-        data={filteredPresidentes}
+        ref={flatListRef}
+        data={filteredPresidentes.slice(0, visiblePresidentes)}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.clubContainer}>
-            <Image source={{ uri: item.persona_imagen }} style={styles.clubImage} />
+            <Image source={getImagenPerfil(item)} style={styles.clubImage} />
             <View style={styles.clubInfo}>
               <Text style={styles.clubName}>{item.nombre} {item.apellido}</Text>
               <Text style={styles.clubDescription}>C.I: {item.ci}</Text>
-              <Text style={styles.clubDescription}>Correo: {item.correo}</Text>
-              <Text style={styles.clubDescription}>{item.nombre_club ? item.nombre_club : 'Sin club asignado'}</Text>
             </View>
             <View style={styles.actions}>
               <TouchableOpacity onPress={() => handleProfileClick(item.id)}>
-                <MaterialIcons name="remove-red-eye" size={24} color="#4CAF50" />
+                <MaterialIcons name="remove-red-eye" size={24} color="#579FA6" />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => handleEditClick(item.id)}>
-                <MaterialIcons name="edit" size={24} color="#FFC107" />
+                <MaterialIcons name="edit" size={24} color="#9DAC42" />
               </TouchableOpacity>
-              <Switch
-                value={item.eliminado !== 'S'}
-                onValueChange={() => handleActivateUser(item.id)}
-              />
             </View>
           </View>
         )}
+        ListFooterComponent={
+          <>
+            {visiblePresidentes < filteredPresidentes.length && (
+              <TouchableOpacity style={styles.loadMoreButton} onPress={handleLoadMore}>
+                <Text style={styles.loadMoreText}>Cargar más</Text>
+              </TouchableOpacity>
+            )}
+            {visiblePresidentes > 5 && (
+              <TouchableOpacity style={styles.goToTopButton} onPress={scrollToTop}>
+                <Icon style={styles.goToTopText} name={'keyboard-arrow-up'}/>
+              </TouchableOpacity>
+            )}
+          </>
+        }
       />
 
       {showRegistrarModal && (
@@ -147,7 +176,13 @@ const ListaPresidenteClub = () => {
       {showEditarModal && (
         <EditarPresidenteModal isOpen={showEditarModal} onClose={handleCloseEditarModal} presidenteId={selectedPresidenteId} onPresidenteUpdated={fetchPresidentes} />
       )}
+      <PerfilPresidenteModal
+        isOpen={perfilPresidenteVisible}
+        onClose={() => setPerfilPresidenteVisible(false)}
+        presidenteId={presidenteIdPerfil}
+      />
     </View>
+    
   );
 };
 

@@ -12,6 +12,7 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import estadosMapping from '../../constants/campeonato_estados';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import Club_defecto from '../../assets/img/Club_defecto.png';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
@@ -78,12 +79,12 @@ const TablaPosiciones = () => {
 
   useEffect(() => {
     if (!campeonatoId || !categoriaId) return;
-    const ws = new WebSocket(`${WEBSOCKET_URL}/tablaposiciones/${campeonatoId}/${categoriaId}`);
+    const ws = new WebSocket(WEBSOCKET_URL);
     ws.onopen = () => console.log('✅ Conexión WebSocket establecida');
     ws.onmessage = (event) => {
       try {
         const mensaje = JSON.parse(event.data);
-        if (mensaje.type === "actualizacion_estados") {
+        if (mensaje.type === "tabla_posiciones_actualizada") {
           fetchEquipos();
         }
       } catch (error) {
@@ -100,14 +101,27 @@ const TablaPosiciones = () => {
 
   const renderFilaEquipo = (equipo, index) => {
     const marcadorVivo = marcadoresVivos[equipo.equipo_id];
+    const getImagenClub = (imagen) => imagen ? { uri: imagen } : Club_defecto;
     return (
       <View key={equipo.equipo_id} style={[styles.fila, equipo.estado === 'Deuda' && styles.filaDeuda]}>
         <View style={styles.columnaFija}>
           <Text style={styles.celda}>{index + 1}</Text>
           <TouchableOpacity style={styles.celdaEquipo} onPress={() => handleTeamClick(equipo.equipo_id)}>
-            <Image source={{ uri: equipo.escudo }} style={[styles.logoEquipo, equipo.estado === 'Deuda' && styles.logoDeuda]} />
-            <Text style={styles.nombreEquipo} numberOfLines={1}>{equipo.equipo_nombre}</Text>
+            <Image source={getImagenClub(equipo.escudo)} style={[styles.logoEquipo, equipo.estado === 'Deuda' && styles.logoDeuda]} />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.nombreEquipo} numberOfLines={1}>{equipo.equipo_nombre}</Text>
+              {marcadorVivo && (
+                <View style={[
+                  styles.marcadorVivo, 
+                  styles[`marcador${marcadorVivo.estado.charAt(0).toUpperCase() + marcadorVivo.estado.slice(1)}`],
+                  { marginLeft: 6 } // pequeño margen a la izquierda del nombre
+                ]}>
+                  <Text style={styles.textoMarcador}>{marcadorVivo.marcador}</Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
+
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.contenidoScroll}>
@@ -127,11 +141,7 @@ const TablaPosiciones = () => {
             </View>
           </View>
         </ScrollView>
-        {marcadorVivo && (
-          <View style={[styles.marcadorVivo, styles[`marcador${marcadorVivo.estado.charAt(0).toUpperCase() + marcadorVivo.estado.slice(1)}`]]}>
-            <Text style={styles.textoMarcador}>{marcadorVivo.marcador}</Text>
-          </View>
-        )}
+
       </View>
     );
   };
@@ -147,7 +157,7 @@ const TablaPosiciones = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.back()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color="#143E42" />
         </TouchableOpacity>
         <Text style={styles.titulo}>{titulo}</Text>

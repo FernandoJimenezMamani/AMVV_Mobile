@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Switch, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/confirm_modal';
 import CrearCategoriaModal from './crear'; // Importa el modal unificado
 import styles from '../../styles/index_tabla';
-
+import { Picker } from '@react-native-picker/picker';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaCategorias = () => {
@@ -14,10 +14,12 @@ const ListaCategorias = () => {
   const [categoriaToDelete, setCategoriaToDelete] = useState(null);
   const [showCrearModal, setShowCrearModal] = useState(false); // Estado para el modal unificado
   const [selectedCategoriaId, setSelectedCategoriaId] = useState(null); // ID de la categoría seleccionada para editar
-
+  const [filterState, setFilterState] = useState('No filtrar');
+  const [filteredCategorias, setFilteredCategorias] = useState([]);
   useEffect(() => {
     fetchCategorias();
   }, []);
+  
 
   const fetchCategorias = async () => {
     try {
@@ -29,6 +31,21 @@ const ListaCategorias = () => {
     }
   };
 
+  useEffect(() => {
+      applyFilters();
+    }, [categorias, filterState]);
+  
+    const applyFilters = () => {
+      let filtered = [...categorias];
+    
+      if (filterState !== 'No filtrar') {
+        filtered = filtered.filter((club) =>
+          filterState === 'Activo' ? club.eliminado === 'N' : club.eliminado === 'S'
+        );
+      }
+    
+      setFilteredCategorias(filtered);
+    };
   const handleEditClick = (categoriaId) => {
     setSelectedCategoriaId(categoriaId); // Establece el ID de la categoría a editar
     setShowCrearModal(true); // Abre el modal en modo edición
@@ -56,9 +73,22 @@ const ListaCategorias = () => {
       setCategorias(categorias.filter(categoria => categoria.id !== categoriaToDelete));
       setShowConfirm(false);
       setCategoriaToDelete(null);
+      fetchCategorias();
     } catch (error) {
       Alert.alert('Error', 'No se pudo eliminar la categoría');
       console.error('Error al eliminar la categoría:', error);
+    }
+  };
+
+  const handleActivateCategoria = async (id) => {
+    try {
+      const user_id = 1; 
+      await axios.put(`${API_BASE_URL}/categoria/activate_categoria/${id}`, { user_id });
+      toast.success('Categoria activado exitosamente');
+      fetchCategorias();
+    } catch (error) {
+      toast.error('Error al activar el Categoria');
+      console.error('Error al activar Categoria:', error);
     }
   };
 
@@ -80,29 +110,20 @@ const ListaCategorias = () => {
           {item.division === 'MY' ? 'Mayores' :
            item.division === 'MN' ? 'Menores' : 'No especificado'}
         </Text>
-        <Text style={styles.clubDescription}>
-          Edad Mínima: {item.edad_minima !== null && item.edad_minima !== undefined && item.edad_minima !== 0
-            ? item.edad_minima 
-            : 'No especificado'}
-        </Text>
-        <Text style={styles.clubDescription}>
-          Edad Máxima: {item.edad_maxima !== null && item.edad_maxima !== undefined && item.edad_minima !== 0
-            ? item.edad_maxima 
-            : 'No especificado'}
-        </Text>
-        <Text style={styles.clubDescription}>
-          Costo de Traspaso: {item.costo_traspaso !== null && item.costo_traspaso !== undefined 
-            ? item.costo_traspaso 
-            : 'No especificado'}
-        </Text>
+
       </View>
       <View style={styles.actions}>
         <TouchableOpacity onPress={() => handleEditClick(item.id)}>
-          <MaterialIcons name="edit" size={24} color="#FFC107" />
+          <MaterialIcons name="edit" size={24} color="#9DAC42" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleDeleteClick(item.id)}>
-          <MaterialIcons name="delete-forever" size={24} color="#F44336" />
-        </TouchableOpacity>
+        <Switch
+           value={item.eliminado !== 'S'}
+           onValueChange={() =>
+            item.eliminado === 'S'
+               ? handleActivateCategoria(item.id)
+               : handleDeleteClick(item.id)
+           }
+         />
       </View>
     </View>
   );
@@ -113,9 +134,19 @@ const ListaCategorias = () => {
       <TouchableOpacity style={styles.addButton} onPress={handleRegistrarClick}>
         <Text style={styles.addButtonText}>+1 Categoría</Text>
       </TouchableOpacity>
-
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={filterState}
+          onValueChange={(value) => setFilterState(value)}
+          style={styles.picker}
+        >
+          <Picker.Item label="No filtrar" value="No filtrar" />
+          <Picker.Item label="Activo" value="Activo" />
+          <Picker.Item label="Inactivo" value="Inactivo" />
+        </Picker>
+      </View>
       <FlatList
-        data={categorias}
+        data={filteredCategorias}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
       />

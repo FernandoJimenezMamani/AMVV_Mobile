@@ -176,7 +176,24 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
                   )}
                 </View>
               )}
-
+              {(hasRole('Arbitro')) && (
+                <TouchableOpacity onPress={() => {router.push('/partidos/partido_arbitro'); setMenuVisible(false);} }>
+                <View style={styles.mainLink}>
+                  <MaterialIcons name="home" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                  <Text style={styles.mainLinkText}>Mis Partidos</Text>
+                </View>
+  
+                </TouchableOpacity>
+              )}
+              {(hasRole('Jugador')) && (
+                <TouchableOpacity onPress={() => {router.push('/partidos/partido_arbitro'); setMenuVisible(false);} }>
+                <View style={styles.mainLink}>
+                  <MaterialIcons name="home" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                  <Text style={styles.mainLinkText}>Mis Partidos</Text>
+                </View>
+  
+                </TouchableOpacity>
+              )}
               <TouchableOpacity 
                 style={styles.accountButton} 
                 onPress={handleProfileClick}

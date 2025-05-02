@@ -601,7 +601,7 @@ const PerfilEquipo = () => {
       <Modal
         visible={showConfirmModal}
         transparent={true}
-        animationType="slide"
+
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

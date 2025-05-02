@@ -7,7 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import estadosPartidoCampMapping from '../../../constants/estado_partido';
 import rolMapping from '../../../constants/roles';
 import styles from '../../../styles/partidos/index_partido';
-
+import Club_defecto from '../../../assets/img/Club_defecto.png';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PartidosList = () => {
@@ -188,6 +188,7 @@ const PartidosList = () => {
     const estadoPartido = getEstadoPartidoIcono(partido.fecha, partido.estado);
     const resultado = resultados[partido.id];
 
+    const getImagenClub = (imagen) => imagen ? { uri: imagen } : Club_defecto;
     return (
       <TouchableOpacity 
         style={styles.card}
@@ -206,7 +207,7 @@ const PartidosList = () => {
         <View style={styles.teamContainer}>
           <View style={styles.team}>
             <Image 
-              source={{ uri: partido.equipo_local_imagen }} 
+              source={getImagenClub(partido.equipo_local_imagen)} 
               style={styles.teamLogo} 
               defaultSource={require('../../../assets/img/Default_Imagen_Club.webp')}
             />
@@ -217,7 +218,7 @@ const PartidosList = () => {
 
           <View style={styles.team}>
             <Image 
-              source={{ uri: partido.equipo_visitante_imagen }} 
+              source={getImagenClub(partido.equipo_visitante_imagen)} 
               style={styles.teamLogo} 
               defaultSource={require('../../../assets/img/Default_Imagen_Club.webp')}
             />
@@ -265,16 +266,6 @@ const PartidosList = () => {
       </View>
 
       <View style={styles.controlsContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.actionButton, 
-            fixtureCompleto && { opacity: 0.5 }
-          ]}
-          onPress={handleRegistrarPartido}
-          disabled={fixtureCompleto}
-        >
-          <Text style={styles.buttonText}>+1 Partido</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity 
           style={styles.actionButton}

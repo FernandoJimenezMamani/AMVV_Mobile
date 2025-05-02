@@ -23,8 +23,10 @@ import styles from '../../../styles/partido_detalle';
 import MapaDetalleModal from '../../../components/mapa_detalle';
 import ConfirmModal from '../../../components/confirm_modal';
 import ReprogramacionModal from '../../../components/reprogramacion_modal';
-
+import PulseDot from '../../../components/PulseDot';
+import Club_defecto from '../../../assets/img/Club_defecto.png';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
 const { width } = Dimensions.get('window');
 
 const PartidoDetalle = () => {
@@ -34,7 +36,6 @@ const PartidoDetalle = () => {
   // Extraer parámetros correctamente
   const partidoId = params.partidoId;
   const campeonatoId = params.campeonatoId;
-  const categoriaId = params.categoriaId;
 
   const [partido, setPartido] = useState(null);
   const [jugadoresLocal, setJugadoresLocal] = useState([]);
@@ -149,8 +150,46 @@ const PartidoDetalle = () => {
     }
   }, [partido]);
 
+  useEffect(() => {
+    if (!partidoId) return;
+  
+    const ws = new WebSocket(WEBSOCKET_URL);
+  
+    ws.onopen = () => {
+      console.log('✅ WebSocket abierto para actualizaciones de partido');
+    };
+  
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'actualizacion_resultado') {
+          console.log('📡 Actualización de partido recibida por WebSocket');
+          fetchPartido();
+          fetchResultados();
+          fetchGanador();
+        }
+      } catch (error) {
+        console.error('❌ Error procesando el mensaje WebSocket:', error);
+      }
+    };
+  
+    ws.onerror = (error) => {
+      console.error('⚠️ Error en la conexión WebSocket:', error);
+    };
+  
+    ws.onclose = () => {
+      console.log('🔴 WebSocket cerrado para actualizaciones de partido');
+    };
+  
+    // Cierra la conexión WebSocket cuando el componente se desmonta
+    return () => {
+      ws.close();
+    };
+  }, [partidoId]);
+  
+
   // Validación de parámetros
-  if (!partidoId || !campeonatoId || !categoriaId) {
+  if (!partidoId || !campeonatoId ) {
     return (
       <View style={styles.errorContainer}>
         <Text>Error: Parámetros faltantes</Text>
@@ -187,8 +226,7 @@ const PartidoDetalle = () => {
       pathname: '/partidos/registrar_resultado',
       params: { 
         partidoId,
-        campeonatoId,
-        categoriaId 
+        campeonatoId
       }
     });
   };
@@ -282,7 +320,7 @@ const PartidoDetalle = () => {
       </View>
     );
   }
-
+ const getImagenClub = (imagen) => imagen ? { uri: imagen } : Club_defecto;
   return (
     <ScrollView style={styles.container}>
       {/* Encabezado */}
@@ -291,6 +329,24 @@ const PartidoDetalle = () => {
           <Icon name="arrow-back" size={24} color="#143E42" />
         </TouchableOpacity>
         <Text style={styles.title}>Detalles del Partido</Text>
+      </View>
+
+      {/* Información básica */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.infoText}>
+          <Text style={styles.boldText}>Fecha:</Text> {formatDate(partido.fecha)}, {formatTime(partido.fecha)}
+        </Text>
+        <View style={styles.locationContainer}>
+          <Text style={styles.infoText}>
+            <Text style={styles.boldText}>Lugar del encuentro:</Text> {partido.lugar_nombre}
+          </Text>
+          <TouchableOpacity
+            style={styles.mapButton}
+            onPress={handleViewOnMap}  // Eliminé el parámetro que no existía
+          >
+            <Icon name="location-on" size={20} color="#3D8FA4" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Botones de acción */}
@@ -325,24 +381,6 @@ const PartidoDetalle = () => {
         )}
       </View>
 
-      {/* Información básica */}
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>
-          <Text style={styles.boldText}>Fecha:</Text> {formatDate(partido.fecha)}, {formatTime(partido.fecha)}
-        </Text>
-        <View style={styles.locationContainer}>
-          <Text style={styles.infoText}>
-            <Text style={styles.boldText}>Lugar del encuentro:</Text> {partido.lugar_nombre}
-          </Text>
-          <TouchableOpacity
-            style={styles.mapButton}
-            onPress={handleViewOnMap}  // Eliminé el parámetro que no existía
-          >
-            <Icon name="location-on" size={20} color="#3D8FA4" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* Estado del partido */}
       <View style={styles.matchContainer}>
         <Text style={[styles.statusText, 
@@ -350,8 +388,8 @@ const PartidoDetalle = () => {
           partido.estado === estadosPartidoCampMapping.Vivo ? styles.live : styles.upcoming]}>
           {partido.estado === estadosPartidoCampMapping.Vivo ? (
             <>
-              <View style={styles.liveDot} />
-              <Text>En curso</Text>
+              <PulseDot size={12} color="green" />
+              <Text style={styles.liveTittle}>En curso</Text>
             </>
           ) : partido.estado === estadosPartidoCampMapping.Finalizado ? (
             "Finalizado"
@@ -364,7 +402,7 @@ const PartidoDetalle = () => {
         <View style={styles.teamsContainer}>
           <View style={styles.teamContainer}>
             <Image
-              source={{ uri: partido.equipo_local_imagen }}
+              source={ getImagenClub(partido.equipo_local_imagen) }
               style={styles.teamLogo}
             />
             <Text style={styles.teamName}>{partido.equipo_local_nombre}</Text>
@@ -374,7 +412,7 @@ const PartidoDetalle = () => {
 
           <View style={styles.teamContainer}>
             <Image
-              source={{ uri: partido.equipo_visitante_imagen }}
+              source={getImagenClub(partido.equipo_visitante_imagen)}
               style={styles.teamLogo}
             />
             <Text style={styles.teamName}>{partido.equipo_visitante_nombre}</Text>
@@ -405,20 +443,22 @@ const PartidoDetalle = () => {
                   <Text style={styles.scoreText}>{ganadorPartido?.marcador}</Text>
                   
                   <View style={styles.scoreTable}>
-                    <View style={styles.scoreColumn}>
-                      <Text style={styles.teamTitle}>{partido.equipo_local_nombre}</Text>
-                      <Text>Set 1: {resultadoPartido.resultadoLocal?.set1 ?? "-"}</Text>
-                      <Text>Set 2: {resultadoPartido.resultadoLocal?.set2 ?? "-"}</Text>
-                      <Text>Set 3: {resultadoPartido.resultadoLocal?.set3 ?? "-"}</Text>
+                    <View style={[styles.scoreColumn, { alignItems: 'flex-end', paddingRight: 20 }]}>
+                      <Text style={[styles.teamTitle, { textAlign: 'right' }]}>{partido.equipo_local_nombre}</Text>
+                      <Text style={{ textAlign: 'right' }}>Set 1: {resultadoPartido.resultadoLocal?.set1 ?? "-"}</Text>
+                      <Text style={{ textAlign: 'right' }}>Set 2: {resultadoPartido.resultadoLocal?.set2 ?? "-"}</Text>
+                      <Text style={{ textAlign: 'right' }}>Set 3: {resultadoPartido.resultadoLocal?.set3 ?? "-"}</Text>
                     </View>
-                    
-                    <View style={styles.scoreColumn}>
-                      <Text style={styles.teamTitle}>{partido.equipo_visitante_nombre}</Text>
-                      <Text>Set 1: {resultadoPartido.resultadoVisitante?.set1 ?? "-"}</Text>
-                      <Text>Set 2: {resultadoPartido.resultadoVisitante?.set2 ?? "-"}</Text>
-                      <Text>Set 3: {resultadoPartido.resultadoVisitante?.set3 ?? "-"}</Text>
+
+                    <View style={[styles.scoreColumn, { alignItems: 'flex-start', paddingLeft: 20 }]}>
+                      <Text style={[styles.teamTitle, { textAlign: 'left' }]}>{partido.equipo_visitante_nombre}</Text>
+                      <Text style={{ textAlign: 'left' }}>Set 1: {resultadoPartido.resultadoVisitante?.set1 ?? "-"}</Text>
+                      <Text style={{ textAlign: 'left' }}>Set 2: {resultadoPartido.resultadoVisitante?.set2 ?? "-"}</Text>
+                      <Text style={{ textAlign: 'left' }}>Set 3: {resultadoPartido.resultadoVisitante?.set3 ?? "-"}</Text>
                     </View>
                   </View>
+
+
                 </>
               ) : (
                 <Text>No hay datos de resultados disponibles.</Text>
@@ -428,9 +468,8 @@ const PartidoDetalle = () => {
 
         {/* Jugadores */}
         <Text style={styles.sectionTitle}>Jugadores</Text>
-        <View style={styles.playersContainer}>
+        <View style={[styles.playersContainer]}>
           <View style={styles.playersColumn}>
-            <Text style={styles.teamTitle}>{partido.equipo_local_nombre}</Text>
             {jugadoresLocal.length > 0 ? (
               jugadoresLocal.map(jugador => {
                 const tarjetas = getTarjetasJugador(jugador.jugador_id);
@@ -457,8 +496,7 @@ const PartidoDetalle = () => {
             )}
           </View>
 
-          <View style={styles.playersColumn}>
-            <Text style={styles.teamTitle}>{partido.equipo_visitante_nombre}</Text>
+          <View style={[styles.playersColumn, { alignItems: 'flex-start', paddingLeft: 20 }]}>
             {jugadoresVisitante.length > 0 ? (
               jugadoresVisitante.map(jugador => {
                 const tarjetas = getTarjetasJugador(jugador.jugador_id);
@@ -474,7 +512,7 @@ const PartidoDetalle = () => {
                         )}
                       </View>
                     )}
-                    <Text style={styles.playerName}>
+                    <Text style={styles.playerNameV}>
                       {jugador.jugador_nombre} {jugador.jugador_apellido}
                     </Text>
                   </View>
