@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import ConfirmModal from '../../../components/confirm_modal';
@@ -8,7 +8,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import styles from '../../../styles/index_tabla';
 import { useSession } from '../../../context/SessionProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import PerfilJugador from '../../jugador/perfil/[id]'; // Importa el componente PerfilJugador
+import PerfilJugador from '../../jugador/perfil/[id]';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -23,8 +23,12 @@ const ListaJugadoresTraspaso = () => {
   const [jugadorToFichar, setJugadorToFichar] = useState(null);
   const [filterState, setFilterState] = useState('No filtrar');
   const [searchName, setSearchName] = useState('');
-  const [selectedJugadorId, setSelectedJugadorId] = useState(null); // Estado para el jugador seleccionado
-  const [isPerfilModalOpen, setIsPerfilModalOpen] = useState(false); // Estado para controlar el modal
+  const [selectedJugadorId, setSelectedJugadorId] = useState(null);
+  const [isPerfilModalOpen, setIsPerfilModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const itemsPerPage = 10;
+  
   const router = useRouter();
   const { activeRole } = useSession();
 
@@ -67,6 +71,7 @@ const ListaJugadoresTraspaso = () => {
 
   const fetchJugadores = async () => {
     try {
+      setLoading(true);
       const requestBody = {
         club_presidente: presidente.club_presidente,
         idTraspasoPresidente: presidente.id_presidente,
@@ -84,6 +89,8 @@ const ListaJugadoresTraspaso = () => {
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los jugadores');
       console.error('Error al obtener los jugadores:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,9 +123,15 @@ const ListaJugadoresTraspaso = () => {
     setFilteredPersonas(filtered);
   };
 
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredPersonas.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPersonas.length / itemsPerPage);
+
   const handleProfileClick = (jugador) => {
-    setSelectedJugadorId(jugador.jugador_id); // Usa jugador_id en lugar de persona_id
-     setIsPerfilModalOpen(true);
+    setSelectedJugadorId(jugador.jugador_id);
+    setIsPerfilModalOpen(true);
   };
 
   const handleSolicitudesClick = () => {
@@ -128,7 +141,6 @@ const ListaJugadoresTraspaso = () => {
   const handleFicharClick = (jugadorId) => {
     setJugadorToFichar(jugadores.find((jugador) => jugador.jugador_id === jugadorId));
     setShowConfirmTraspaso(true);
-    
   };
 
   const handleConfirmFichar = async () => {
@@ -163,6 +175,8 @@ const ListaJugadoresTraspaso = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Jugadores</Text>
 
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+
       <TouchableOpacity style={styles.addButton} onPress={handleSolicitudesClick}>
         <Text style={styles.addButtonText}>Mis Solicitudes</Text>
       </TouchableOpacity>
@@ -186,8 +200,8 @@ const ListaJugadoresTraspaso = () => {
         />
       </View>
 
-      {filteredPersonas.map((jugador) => (
-  <View key={jugador.jugador_id} style={styles.clubContainer}>
+      {currentItems.map((jugador) => (
+        <View key={jugador.jugador_id} style={styles.clubContainer}>
           <Image
             source={getImagenPerfil(jugador)}
             style={styles.clubImage}
@@ -204,9 +218,9 @@ const ListaJugadoresTraspaso = () => {
             </Text>
           </View>
           <View style={styles.actions}>
-          <TouchableOpacity
+            <TouchableOpacity
               style={{ marginRight: 8 }}
-              onPress={() => handleProfileClick(jugador)} // Pasa el objeto completo
+              onPress={() => handleProfileClick(jugador)}
               disabled={jugador.eliminado === 'S'}
             >
               <MaterialIcons name="remove-red-eye" size={24} color="black" />
@@ -219,6 +233,29 @@ const ListaJugadoresTraspaso = () => {
         </View>
       ))}
 
+      {/* Paginación */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 16 }}>
+        <TouchableOpacity
+          onPress={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          style={[styles.paginationButton, currentPage === 1 && styles.disabledButton]}
+        >
+          <Text>Anterior</Text>
+        </TouchableOpacity>
+
+        <Text style={{ marginHorizontal: 16 }}>
+          Página {currentPage} de {totalPages}
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          style={[styles.paginationButton, currentPage === totalPages && styles.disabledButton]}
+        >
+          <Text>Siguiente</Text>
+        </TouchableOpacity>
+      </View>
+
       <ConfirmModal
         visible={showConfirmTraspaso}
         onConfirm={handleConfirmFichar}
@@ -226,7 +263,6 @@ const ListaJugadoresTraspaso = () => {
         message="¿Seguro que quieres fichar a este jugador?"
       />
 
-      {/* Modal del perfil del jugador */}
       <PerfilJugador
         isOpen={isPerfilModalOpen}
         onClose={() => {

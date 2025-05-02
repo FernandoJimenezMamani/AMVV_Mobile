@@ -294,6 +294,46 @@ const styles = StyleSheet.create({
   acceptButton: {
     backgroundColor: '#28a745',
   },
+ // Agrega estos estilos:
+planillaButton: {
+  backgroundColor: '#4CAF50', // Verde más apropiado para documentos
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 15,
+  borderRadius: 8,
+  marginHorizontal: 5,
+  justifyContent: 'center',
+},
+planillaButtonText: {
+  color: 'white',
+  fontWeight: 'bold',
+  marginLeft: 5,
+},
+  planillaModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  planillaModalContainer: {
+    width: '90%',
+    height: '80%',
+    position: 'relative',
+  },
+  planillaCloseButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 5,
+  },
+  planillaImage: {
+    width: '100%',
+    height: '100%',
+  },
 });
 
 export default styles;

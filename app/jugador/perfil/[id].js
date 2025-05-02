@@ -20,7 +20,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width } = Dimensions.get('window');
 
 const PerfilJugadorModal = ({ isOpen, onClose, id }) => {
-    const [jugador, setJugador] = useState(null);
+    const [jugador, setJugador] = useState({});
     const [clubes, setClubes] = useState([]); // Asegúrate de inicializar como array vacío
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

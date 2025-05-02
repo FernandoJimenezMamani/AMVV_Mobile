@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert, TextInput, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  Image, 
+  ScrollView, 
+  TextInput, 
+  Alert,
+  ActivityIndicator
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import ConfirmModal from '../../../components/confirm_modal';
-import styles from '../../../styles/index_tabla';
+import styles from '../../../styles/index_tabla_traspaso';
+import ClubDefecto from '../../../assets/img/Default_Imagen_Club.webp';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -26,11 +36,10 @@ const MisSolicitudesJugador = () => {
   useEffect(() => {
     const initData = async () => {
       try {
-        await fetchJugador();
         await fetchCampeonatos();
+        await fetchJugador();
       } catch (error) {
         Alert.alert('Error', 'Error al cargar los datos iniciales');
-
       } finally {
         setLoading(false);
       }
@@ -157,36 +166,48 @@ const MisSolicitudesJugador = () => {
   };
 
   const getStatusIcon = (estado) => {
-    const iconProps = {
-      size: 20,
-      style: { marginRight: 5 }
-    };
+    const iconProps = { size: 20, color: undefined };
 
     switch (estado) {
       case 'PENDIENTE':
         return (
-          <View style={styles.statusContainer}>
+          <View style={styles.playerInfoContainer}>
             <MaterialIcons name="pending" {...iconProps} color="orange" />
-            <Text>Pendiente</Text>
+            <Text style={styles.playerRole}>Pendiente</Text>
           </View>
         );
       case 'APROBADO':
+      case 'FINALIZADO':
         return (
-          <View style={styles.statusContainer}>
+          <View style={styles.playerInfoContainer}>
             <MaterialIcons name="check-circle" {...iconProps} color="green" />
-            <Text>Aprobado</Text>
+            <Text style={styles.playerRole}>Aprobado</Text>
           </View>
         );
       case 'RECHAZADO':
         return (
-          <View style={styles.statusContainer}>
+          <View style={styles.playerInfoContainer}>
             <MaterialIcons name="cancel" {...iconProps} color="red" />
-            <Text>Rechazado</Text>
+            <Text style={styles.playerRole}>Rechazado</Text>
           </View>
         );
       default:
         return null;
     }
+  };
+
+  const getImagenClub = (club) => {
+    if (club.imagen_club) {
+      return { uri: club.imagen_club };
+    }
+    return ClubDefecto;
+  };
+
+  const formatFechaLarga = (fechaString) => {
+    if (!fechaString) return '';
+    const [year, month, day] = fechaString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   if (loading) {
@@ -198,33 +219,52 @@ const MisSolicitudesJugador = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Mis Solicitudes</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color="#2c3e50" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Mis Solicitudes</Text>
+      </View>
 
       <View style={styles.filterRow}>
-        <View style={styles.filterItem}>
+        <View style={[styles.pickerContainer, {flex: 1.2}]}>
           <Picker
             selectedValue={filterState}
             onValueChange={setFilterState}
             style={styles.picker}
+            dropdownIconColor="#333"
           >
+            <Picker.Item 
+              label="Estado de solicitud" 
+              value="" 
+              enabled={false} 
+              style={{ color: '#999' }} 
+            />
             <Picker.Item label="Rechazado" value="Rechazado" />
             <Picker.Item label="Pendiente" value="Pendiente" />
             <Picker.Item label="Realizado" value="Realizado" />
           </Picker>
         </View>
 
-        <View style={styles.filterItem}>
+        <View style={styles.pickerContainer}>
           <Picker
             selectedValue={selectedCampeonato}
             onValueChange={setSelectedCampeonato}
             style={styles.picker}
+            dropdownIconColor="#333"
           >
+            <Picker.Item 
+              label="Seleccione campeonato" 
+              value="" 
+              enabled={false} 
+              style={{ color: '#999' }} 
+            />
             {campeonatos.map(camp => (
               <Picker.Item 
                 key={camp.id} 
-                label={`🏆 ${camp.nombre}`} 
-                value={camp.id} 
+                label={camp.nombre.length > 15 ? `${camp.nombre.substring(0, 15)}...` : camp.nombre}
+                value={camp.id}
               />
             ))}
           </Picker>
@@ -238,66 +278,63 @@ const MisSolicitudesJugador = () => {
         onChangeText={setSearchName}
       />
 
-      {filteredPersonas.length > 0 ? (
-        filteredPersonas.map(club => (
-          <View key={club.traspaso_id} style={styles.card}>
-            <View style={styles.cardHeader}>
+      <ScrollView style={styles.listContainer}>
+        {filteredPersonas.length > 0 ? (
+          filteredPersonas.map(club => (
+            <View key={club.traspaso_id} style={styles.itemContainer}>
               <Image
-                source={{ uri: club.imagen_club }}
-                style={styles.clubImage}
+                source={getImagenClub(club)}
+                style={styles.smallImage}
               />
-              <Text style={styles.clubName}>{club.nombre_club}</Text>
-            </View>
-
-            <View style={styles.cardBody}>
-              <Text style={styles.cardText}>
-                Fecha: {new Date(club.fecha_solicitud).toLocaleDateString('es-ES', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </Text>
-
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Club origen:</Text>
-                {getStatusIcon(club.estado_club_origen)}
+              <View style={styles.itemInfo}>
+                <Text style={styles.playerName}>{club.nombre_club}</Text>
+                <Text style={styles.clubDescription}>
+                  Fecha: {formatFechaLarga(club.fecha_solicitud)}
+                </Text>
+                
+                <View style={styles.statusContainer}>
+                  <Text style={styles.clubDescription}>Club origen:</Text>
+                  {getStatusIcon(club.estado_club_origen)}
+                </View>
+                
+                <View style={styles.statusContainer}>
+                  <Text style={styles.clubDescription}>Club receptor:</Text>
+                  {getStatusIcon(club.estado_club_receptor)}
+                </View>
+                
+                <View style={styles.statusContainer}>
+                  <Text style={styles.clubDescription}>Pago:</Text>
+                  {getStatusIcon(club.estado_deuda)}
+                </View>
               </View>
-
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Club receptor:</Text>
-                {getStatusIcon(club.estado_club_receptor)}
-              </View>
-
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Pago:</Text>
-                {getStatusIcon(club.estado_deuda)}
-              </View>
-            </View>
-
-            <View style={styles.cardActions}>
-              <TouchableOpacity 
-                onPress={() => handleDetailsClick(club.traspaso_id)}
-                style={styles.actionButton}
-              >
-                <MaterialIcons name="remove-red-eye" size={24} color="#2196F3" />
-              </TouchableOpacity>
               
-              <TouchableOpacity 
-                onPress={() => handleDeleteClick(club.traspaso_id)}
-                style={styles.actionButton}
-              >
-                <MaterialIcons name="delete" size={24} color="#F44336" />
-              </TouchableOpacity>
+              <View style={styles.itemActions}>
+                <TouchableOpacity 
+                  onPress={() => handleDetailsClick(club.traspaso_id)}
+                  style={styles.actionButton}
+                >
+                  <MaterialIcons name="remove-red-eye" size={24} color="#3498db" />
+                </TouchableOpacity>
+                
+                {club.estado_deuda !== 'FINALIZADO' && (
+                  <TouchableOpacity 
+                    onPress={() => handleDeleteClick(club.traspaso_id)}
+                    style={styles.actionButton}
+                  >
+                    <MaterialIcons name="delete" size={24} color="#e74c3c" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-          </View>
-        ))
-      ) : (
-        <Text style={styles.emptyText}>
-          {clubes.length > 0 
-            ? 'No hay solicitudes que coincidan con los filtros'
-            : 'No hay solicitudes disponibles'}
-        </Text>
-      )}
+          ))
+        ) : (
+          <Text style={styles.emptyText}>
+            {clubes.length > 0 
+              ? 'No hay solicitudes que coincidan con los filtros'
+              : 'No hay solicitudes disponibles'}
+          </Text>
+        )}
+      </ScrollView>
 
       <ConfirmModal
         visible={showConfirmDelete}
@@ -305,7 +342,7 @@ const MisSolicitudesJugador = () => {
         onCancel={() => setShowConfirmDelete(false)}
         message="¿Seguro que quieres eliminar esta solicitud?"
       />
-    </ScrollView>
+    </View>
   );
 };
 

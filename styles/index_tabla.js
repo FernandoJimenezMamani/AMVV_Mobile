@@ -186,6 +186,136 @@ noResultsText: {
   fontSize: 16,
   color: '#666',
 },
+paginationButton: {
+  padding: 8,
+  backgroundColor: '#f0f0f0',
+  borderRadius: 4,
+  borderWidth: 1,
+  borderColor: '#ccc',
+},
+disabledButton: {
+  opacity: 0.5,
+},
+solicitudesContainer: {
+  padding: 16,
+  backgroundColor: '#f8f9fa',
+},
+solicitudesHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 20,
+},
+solicitudesTitle: {
+  fontSize: 22,
+  fontWeight: 'bold',
+  color: '#2c3e50',
+  marginLeft: 10,
+},
+solicitudesFilterRow: {
+  flexDirection: 'row',
+  marginBottom: 15,
+  gap: 10,
+},
+solicitudesPickerWrapper: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: '#ced4da',
+  borderRadius: 6,
+  overflow: 'hidden',
+},
+solicitudesSearch: {
+  height: 40,
+  borderWidth: 1,
+  borderColor: '#ced4da',
+  borderRadius: 6,
+  paddingHorizontal: 12,
+  backgroundColor: '#fff',
+  marginBottom: 15,
+},
+solicitudesCard: {
+  backgroundColor: '#fff',
+  borderRadius: 8,
+  padding: 16,
+  marginBottom: 12,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 4,
+  elevation: 2,
+},
+solicitudesPlayerHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 10,
+},
+solicitudesPlayerImage: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  marginRight: 12,
+},
+solicitudesPlayerInfo: {
+  flex: 1,
+},
+solicitudesPlayerName: {
+  fontSize: 17,
+  fontWeight: '600',
+  color: '#343a40',
+},
+solicitudesPlayerDetail: {
+  fontSize: 14,
+  color: '#6c757d',
+  marginBottom: 3,
+},
+solicitudesStatusSection: {
+  marginTop: 14,
+  paddingTop: 14,
+  borderTopWidth: 1,
+  borderTopColor: '#e9ecef',
+},
+solicitudesStatusRow: {
+  flexDirection: 'row',
+  marginBottom: 8,
+},
+solicitudesStatusLabel: {
+  width: 130,
+  fontSize: 14,
+  color: '#495057',
+  fontWeight: '500',
+},
+solicitudesStatusValue: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+solicitudesStatusText: {
+  fontSize: 14,
+  color: '#212529',
+  marginLeft: 5,
+},
+solicitudesActions: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  marginTop: 12,
+  gap: 15,
+},
+solicitudesEmptyText: {
+  textAlign: 'center',
+  marginTop: 30,
+  fontSize: 16,
+  color: '#adb5bd',
+},
+solicitudesSectionTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#2c3e50',
+  marginBottom: 8,
+},
+solicitudesSubtitle: {
+  fontSize: 15,
+  color: '#495057',
+  marginBottom: 12,
+  fontWeight: '500',
+},
 });
 
 export default styles;

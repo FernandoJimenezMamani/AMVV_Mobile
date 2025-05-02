@@ -10,13 +10,14 @@ import {
   TouchableOpacity
 } from 'react-native';
 import axios from 'axios';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter} from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultUserMen from '../../../assets/img/Default_Imagen_Men.webp';
 import defaultUserWomen from '../../../assets/img/Default_Imagen_Women.webp';
 import styles from '../../../styles/detalle_traspaso';
 import ConfirmModal from '../../../components/confirm_modal';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -28,6 +29,7 @@ const DetalleTraspaso = () => {
   const [error, setError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [actionType, setActionType] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     if (solicitudId) {
@@ -155,7 +157,12 @@ const DetalleTraspaso = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Certificado de Transferencia</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color="#143E42" />
+          </TouchableOpacity>
+        <Text style={styles.title}>Certificado de Transferencia</Text>
+      </View>
 
       {/* Club Actual */}
       <View style={styles.infoContainer}>

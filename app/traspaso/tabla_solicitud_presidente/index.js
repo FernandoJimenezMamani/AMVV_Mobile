@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import styles from '../../../styles/index_tabla';
+import styles from '../../../styles/index_tabla_solicitud';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -34,23 +34,23 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
     switch (estado) {
       case 'PENDIENTE':
         return (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <View style={styles.statusRow}>
             <MaterialIcons name="pending" size={20} color="orange" />
-            <Text>Pendiente</Text>
+            <Text style={styles.statusText}>Pendiente</Text>
           </View>
         );
       case 'APROBADO':
         return (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <View style={styles.statusRow}>
             <MaterialIcons name="check-circle" size={20} color="green" />
-            <Text>Aprobado</Text>
+            <Text style={styles.statusText}>Aprobado</Text>
           </View>
         );
       case 'RECHAZADO':
         return (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <View style={styles.statusRow}>
             <MaterialIcons name="cancel" size={20} color="red" />
-            <Text>Rechazado</Text>
+            <Text style={styles.statusText}>Rechazado</Text>
           </View>
         );
       default:
@@ -65,6 +65,11 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
       : require('../../../assets/img/Default_Imagen_Women.webp');
   };
 
+  const getImagenClub = (clubImagen) => {
+    if (clubImagen) return { uri: clubImagen };
+    return require('../../../assets/img/Default_Imagen_Club.webp');
+  };
+
   const filteredSolicitudes = solicitudes.filter(s => {
     return estadoFiltro === 'TODOS' || s.estado_club_origen === estadoFiltro;
   });
@@ -73,68 +78,85 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
     <ScrollView style={styles.container}>
       {filteredSolicitudes.length > 0 ? (
         filteredSolicitudes.map(s => (
-          <View key={s.traspaso_id} style={styles.clubContainer}>
+          <View key={s.traspaso_id} style={styles.card}>
             {/* Jugador */}
-            <View style={styles.playerInfoContainer}>
-              <Image
-                source={getImagenPerfil(s.imagen_jugador, s.genero_persona)}
-                style={styles.smallImage}
-              />
-              <View>
-                <Text style={styles.playerName}>
-                  {s.nombre_jugador} {s.apellido_jugador}
-                </Text>
-                <Text style={styles.playerRole}>Jugador</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Jugador:</Text>
+              <View style={styles.playerInfo}>
+                <Image
+                  source={getImagenPerfil(s.imagen_jugador, s.genero_persona)}
+                  style={styles.image}
+                />
+                <View>
+                  <Text style={styles.playerName}>
+                    {s.nombre_jugador} {s.apellido_jugador}
+                  </Text>
+                  <Text style={styles.playerRole}>Jugador</Text>
+                </View>
               </View>
             </View>
 
             {/* Club Interesado */}
-            <View style={styles.playerInfoContainer}>
-              <Image
-                source={{ uri: s.club_imagen }}
-                style={styles.smallImage}
-              />
-              <Text style={styles.clubName}>{s.club_destino_nombre}</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Club destino:</Text>
+              <View style={styles.playerInfo}>
+                <Image
+                  source={getImagenClub(s.club_imagen)}
+                  style={styles.image}
+                />
+                <Text style={styles.clubName}>{s.club_destino_nombre}</Text>
+              </View>
             </View>
 
             {/* Presidente Interesado */}
-            <View style={styles.playerInfoContainer}>
-              <Image
-                source={getImagenPerfil(s.imagen_presidente, s.genero)}
-                style={styles.smallImage}
-              />
-              <View>
-                <Text style={styles.playerName}>
-                  {s.nombre} {s.apellido}
-                </Text>
-                <Text style={styles.playerRole}>Presidente</Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Presidente:</Text>
+              <View style={styles.playerInfo}>
+                <Image
+                  source={getImagenPerfil(s.imagen_presidente, s.genero)}
+                  style={styles.image}
+                />
+                <View>
+                  <Text style={styles.playerName}>
+                    {s.nombre} {s.apellido}
+                  </Text>
+                  <Text style={styles.playerRole}>Presidente</Text>
+                </View>
               </View>
             </View>
 
             {/* Fecha de Solicitud */}
-            <Text style={styles.clubDescription}>
-              {new Date(s.fecha_solicitud).toLocaleDateString('es-ES')}
-            </Text>
+            <View style={styles.row}>
+              <Text style={styles.label}>Fecha:</Text>
+              <Text style={styles.value}>
+                {new Date(s.fecha_solicitud).toLocaleDateString('es-ES')}
+              </Text>
+            </View>
 
-            {/* Tu Respuesta */}
-            <View style={styles.statusContainer}>
-              {getStatusIcon(s.estado_club_origen)}
+            {/* Estado */}
+            <View style={styles.row}>
+              <Text style={styles.label}>Tu respuesta:</Text>
+              <View style={styles.statusContainer}>
+                {getStatusIcon(s.estado_club_origen)}
+              </View>
             </View>
 
             {/* Acción */}
             <TouchableOpacity 
-              onPress={() => router.push(`/traspasos/detallePresidente/${s.traspaso_id}`)}
+              onPress={() => router.push(`/traspaso/detalle_presidente/${s.traspaso_id}`)}
               style={styles.actionButton}
             >
-              <MaterialIcons name="remove-red-eye" size={24} color="black" />
+              <Text style={styles.actionButtonText}>Ver Detalle</Text>
+              <MaterialIcons name="chevron-right" size={24} color="#3D8FA4" />
             </TouchableOpacity>
           </View>
         ))
       ) : (
-        <Text style={styles.noResultsText}>No hay solicitudes disponibles</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No hay solicitudes disponibles</Text>
+        </View>
       )}
     </ScrollView>
   );
 };
-
 export default TablaSolicitudesPresidente;
