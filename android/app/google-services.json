@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "613855370871",
+    "project_id": "amvvapp",
+    "storage_bucket": "amvvapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613855370871:android:3ad894c5f9569c6c52b072",
+        "android_client_info": {
+          "package_name": "com.fernoxjm.amvv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIjoZxirpHmKjt006jX30ZxR-y8N5CfyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

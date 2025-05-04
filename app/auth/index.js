@@ -38,14 +38,12 @@ const InicioDeSesion = () => {
         setRoles(roles);
       } else {
         login({ user, token });
-        // Registrar token push después del login exitoso
+        router.push('/');
         try {
           await registerForPushNotifications();
         } catch (error) {
           console.error('Error al registrar notificaciones push:', error);
-
         }
-        router.push('/campeonato'); // Cambiado de '/hamburgerAdmin' a '/campeonatos'
         Toast.show({
                 type: 'success',
                 text1: 'Iniciaste sesion',

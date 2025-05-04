@@ -83,6 +83,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#1B2426',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
   
 });
   export default styles;

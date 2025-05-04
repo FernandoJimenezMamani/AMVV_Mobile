@@ -29,6 +29,8 @@
     },
     "android": {
       "package": "com.fernoxjm.amvv",
+      "googleServicesFile": "./android/app/google-services.json",
+      "useNextNotificationsApi": true,
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
