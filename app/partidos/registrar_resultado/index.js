@@ -839,7 +839,6 @@ const SubmitResultados = () => {
           </Modal>
         </ScrollView>
       )}
-      <Toast />
     </View>
   );
 };

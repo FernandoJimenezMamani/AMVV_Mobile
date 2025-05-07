@@ -12,20 +12,28 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const setupNotificationListeners = (navigation) => {
-  // Listener para notificaciones recibidas en primer plano
+export const setupNotificationListeners = (router) => {
   Notifications.addNotificationReceivedListener(notification => {
     console.log('Notificación recibida:', notification);
   });
 
-  // Listener para cuando el usuario toca la notificación
   Notifications.addNotificationResponseReceivedListener(response => {
     const data = response.notification.request.content.data;
     console.log('Usuario tocó la notificación:', data);
     
-    // Navegar según el tipo de notificación
-    if (data?.screen) {
-      navigation.navigate(data.screen, data);
+    if (data?.screen === 'detalle_jugador') {
+      router.push(`/traspaso/detalle_jugador/${data.traspasoId}`);
+    }
+    switch(data?.screen){
+      case 'detalle_jugador':
+        router.push(`/traspaso/detalle_jugador/${data.traspasoId}`);
+        break;
+      case 'detalle_presidente':
+        router.push(`/traspaso/detalle_presidente/${data.traspasoId}`);
+        break;
+      case 'detalle_solicitante':
+          router.push(`/traspaso/detalle_solicitante/${data.traspasoId}`);
+          break;  
     }
   });
 };

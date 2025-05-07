@@ -4,22 +4,19 @@ import HamburgerMenu from './hamburgerAdmin';
 import Toast from 'react-native-toast-message';
 import { useEffect } from 'react';
 import { registerForPushNotifications, setupNotificationListeners } from '../services/notification';
-import { useNavigation } from 'expo-router';
+import { useRouter  } from 'expo-router';
 
 function RootLayout() {
   const { token } = useSession();
   const isLoggedIn = !!token;
-  const navigation = useNavigation();
+  const router = useRouter(); 
 
   useEffect(() => {
     if (isLoggedIn) {
-      // Registrar para notificaciones push cuando el usuario está logueado
       registerForPushNotifications();
-      
-      // Configurar los listeners de notificaciones
-      setupNotificationListeners(navigation);
+      setupNotificationListeners(router); 
     }
-  }, [isLoggedIn, navigation]);
+  }, [isLoggedIn, router]);
 
   return (
     <HamburgerMenu isLoggedIn={isLoggedIn}>
@@ -27,7 +24,6 @@ function RootLayout() {
     </HamburgerMenu>
   );
 }
-
 export default function AppLayout() {
   return (
     <SessionProvider>

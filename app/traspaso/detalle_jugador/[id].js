@@ -99,12 +99,21 @@ const DetalleTraspaso = () => {
         },
       });
 
-      Alert.alert('Éxito', `Traspaso ${actionType === 'approve' ? 'aprobado' : 'rechazado'} exitosamente`);
+       Toast.show({
+              type: 'success', 
+              text1: 'Éxito',
+              text2: `Traspaso ${actionType === 'approve' ? 'aprobado' : 'rechazado'} exitosamente`, 
+              position: 'bottom'
+            });
       closeModal();
       fetchSolicitud();
     } catch (error) {
-      Alert.alert('Error', `Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso`);
-      console.error(`Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso:`, error);
+      Toast.show({
+              type: 'error', 
+              text1: 'Error',
+              text2: `Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso`, 
+              position: 'bottom'
+            });
     }
   };
 

@@ -18,6 +18,7 @@ import defaultUserWomen from '../../../assets/img/Default_Imagen_Women.webp';
 import styles from '../../../styles/detalle_traspaso';
 import ConfirmModal from '../../../components/confirm_modal';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Toast from 'react-native-toast-message';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -123,21 +124,23 @@ const DetalleTraspasoPresidente = () => {
       } else {
         url = `${API_BASE_URL}/traspaso/${actionType === 'approve' ? 'aprobar' : 'rechazar'}/club/${solicitudId}`;
       }
-
-      const token = await AsyncStorage.getItem('token');
-      await axios.put(url, { presidenteId: presidente.id_presidente }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      console.log(presidente.id);
+      await axios.put(url, { presidenteId: presidente.id });
+      Toast.show({
+        type: 'success', 
+        text1: 'Éxito',
+        text2: `Traspaso ${actionType === 'approve' ? 'aprobado' : 'rechazado'} exitosamente`, 
+        position: 'bottom'
       });
-  
-      Alert.alert('Éxito', `Traspaso ${actionType === 'approve' ? 'aprobado' : 'rechazado'} exitosamente`);
       closeModal();
       fetchSolicitud();
     } catch (error) {
-      Alert.alert('Error', `Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso`);
-      console.error(`Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso:`, error);
+      Toast.show({
+        type: 'error', 
+        text1: 'Error',
+        text2: `Error al ${actionType === 'approve' ? 'aprobar' : 'rechazar'} el traspaso`, 
+        position: 'bottom'
+      });
     }
   };
 
