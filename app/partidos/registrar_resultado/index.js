@@ -173,9 +173,10 @@ const SubmitResultados = () => {
         // Recortar la imagen
         const croppedImage = await ImageManipulator.manipulateAsync(
           photo.uri,
-          [{ crop: { originX: 0, originY: 0, width: photo.width, height: photo.height } }],
+          [], // sin crop
           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
+        
 
         setImagenPlanilla({
           uri: croppedImage.uri,
@@ -335,14 +336,22 @@ const SubmitResultados = () => {
       
       const result = await response.json();
       
+      
       if (response.ok) {
-        Alert.alert("Éxito", "Resultados registrados correctamente");
+        Toast.show({
+          type: 'success',
+          text1:'Resultados registrados correctamente',
+          position: 'bottom',
+        });
         navigation.back();
       } else {
-        Alert.alert("Error", result.message || "Error al registrar los resultados");
+        Toast.show({
+          type: 'error',
+          text1: result.message || result.mensaje || 'Error al registrar los resultados',
+          position: 'bottom',
+        });
       }
     } catch (error) {
-      console.error("Error al enviar los resultados:", error);
       Alert.alert("Error", "No se pudo conectar con el servidor");
     } finally {
       setIsLoading(false);
@@ -380,13 +389,21 @@ const SubmitResultados = () => {
 
       const result = await response.json();
 
+      
       if (response.ok) {
-        Alert.alert("Éxito", "Resultados parciales actualizados");
+        Toast.show({
+          type: 'success',
+          text1: 'Resultados parciales actualizados',
+          position: 'bottom',
+        });
       } else {
-        Alert.alert("Error", result.message || "Error al actualizar");
+        Toast.show({
+          type: 'error',
+          text1: result.message || result.mensaje || 'Error al actualizar',
+          position: 'bottom',
+        });
       }
     } catch (error) {
-      console.error(error);
       Alert.alert("Error", "No se pudo conectar con el servidor");
     } finally {
       setIsLoading(false);

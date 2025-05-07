@@ -5,12 +5,13 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/confirm_modal';
 import CrearClubModal from './crear';
-//import EditarClubModal from './editar';
+import EditarClubModal from './editar';
 import styles from "../../styles/index_tabla";
 import { useSession } from '../../context/SessionProvider';
 import rolMapping from '../../constants/roles';
 import { Picker } from '@react-native-picker/picker';
 import Club_defecto from '../../assets/img/Club_defecto.png';
+import Toast from 'react-native-toast-message';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaClubes = () => {
@@ -99,9 +100,13 @@ const ListaClubes = () => {
       setClubes(prev => prev.filter(club => club.id !== clubToDelete));
       setShowConfirm(false);
       setClubToDelete(null);
+      fetchClubes();
     } catch (error) {
-      console.error('Error al eliminar el club:', error);
-      Alert.alert('Error', 'No se pudo eliminar el club');
+      Toast.show({
+        type: 'error',
+        text1: 'Error al eliminar el club',
+        position: 'bottom',
+      });
     } finally {
       setLoading(false);
     }
@@ -111,11 +116,18 @@ const ListaClubes = () => {
     try {
       const user_id = 1; 
       await axios.put(`${API_BASE_URL}/club/activate_club/${id}`, { user_id });
-      toast.success('Categoria activado exitosamente');
+      Toast.show({
+        type: 'success',
+        text1: 'Club activado exitosamente',
+        position: 'bottom',
+      });      
       fetchClubes();
     } catch (error) {
-      toast.error('Error al activar el Categoria');
-      console.error('Error al activar Categoria:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error al activar el club',
+        position: 'bottom',
+      });
     }
   };
 
@@ -232,6 +244,12 @@ const ListaClubes = () => {
         onClubCreated={fetchClubes}
       />
 
+      <EditarClubModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        clubId={selectedClubId} // Pasar el ID del delegado a editar
+        onClubUpdated={fetchClubes} // Recargar la lista después de editar
+      />
       
     </ScrollView>
   );

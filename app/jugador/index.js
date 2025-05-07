@@ -10,6 +10,7 @@ import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
 import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import PerfilJugadorModal from './perfil/[id]'; // ajustá la ruta si es diferente
+import EditarJugadorModal from './editar';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -19,6 +20,7 @@ const ListaJugadores = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCrearModal, setShowCrearModal] = useState(false);
+  const [showEditarModal, setShowEditarModal] = useState(false);
   const [selectedJugadorId, setSelectedJugadorId] = useState(null);
   const [filterState, setFilterState] = useState('No filtrar');
   const [searchName, setSearchName] = useState('');
@@ -84,7 +86,7 @@ const ListaJugadores = () => {
   // Manejar la apertura del modal de edición
   const handleEditClick = (jugadorId) => {
     setSelectedJugadorId(jugadorId);
-    setShowCrearModal(true);
+    setShowEditarModal(true);
   };
 
   // Manejar la apertura del modal de registro
@@ -109,6 +111,11 @@ const ListaJugadores = () => {
   const handleProfileClick = (jugadorId) => {
     setJugadorIdPerfil(jugadorId);
     setPerfilJugadorVisible(true);
+  };
+  
+  const handleCloseEditarModal = () => {
+    setShowEditarModal(false); // Cierra el modal de edición
+    setSelectedJugadorId(null); // Limpia el ID del delegado seleccionado
   };
   
   // Manejar la confirmación de eliminación
@@ -254,7 +261,12 @@ const ListaJugadores = () => {
         onJugadorCreated={fetchJugadores}
         onJugadorUpdated={fetchJugadores}
       />
-
+      <EditarJugadorModal
+        isOpen={showEditarModal}
+        onClose={handleCloseEditarModal}
+        jugadorId={selectedJugadorId} // Pasar el ID del delegado a editar
+        onJugadorUpdated={fetchJugadores} // Recargar la lista después de editar
+      />
       {/* Modal de confirmación para eliminar */}
       <ConfirmModal
         visible={showConfirm}

@@ -1,0 +1,28 @@
+# Ignorar dependencias instaladas localmente
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Archivos de configuración locales
+.env
+.env.local
+*.keystore
+*.jks
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Salidas de build y paquetes
+*.apk
+*.aab
+*.tar.gz
+*.zip
+
+# Carpetas que no afectan el build
+__tests__/
+test/
+docs/
+designs/
+mock_data/
+screenshots/

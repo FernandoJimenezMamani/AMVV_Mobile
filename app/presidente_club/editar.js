@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Modal,ActivityIndicator,
+  ScrollView} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import styles from '../../styles/crear_modal';
-
+import Toast from 'react-native-toast-message';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }) => {
@@ -28,6 +29,7 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
   const [croppedImage, setCroppedImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [clubes, setClubes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchPresidente = async () => {
@@ -122,7 +124,7 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
       };
       data.append('image', file);
     }
-
+    setLoading(true);
     try {
       const response = await axios.put(
         `${API_BASE_URL}/persona/update_persona_with_roles/${presidenteId}`,
@@ -134,11 +136,23 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
       console.log('Respuesta del servidor:', response.data);
       onPresidenteUpdated();
       onClose();
-    } catch (error) {
-      console.error(
-        'Error al actualizar el presidente:',
-        error.response ? error.response.data : error.message
-      );
+      Toast.show({
+        type: 'success',
+        text1: 'Presidente actualizado con éxito',
+        position: 'bottom',
+      });
+    } catch (err) {
+      const msg =
+      err.response?.data?.message ||
+      err.response?.data?.mensaje ||
+        'Error al registrar jugador';
+      Toast.show({
+        type: 'error',
+        text1: msg,
+        position: 'bottom',
+      });
+    }finally {
+      setLoading(false); 
     }
   };
 
@@ -147,40 +161,50 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Editar Presidente</Text>
-          <TouchableOpacity onPress={handleSelectImage} style={styles.fileButton}>
-            {imagePreview ? (
-              <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
-            ) : (
-              <Text style={styles.fileButtonText}>Seleccionar Foto</Text>
+          <ScrollView>
+            <View style={{ alignItems: 'center', marginBottom: 15 }}>
+              <TouchableOpacity onPress={handleSelectImage} style={styles.fileButton}>
+                {imagePreview ? (
+                  <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
+                ) : (
+                  <Text style={styles.fileButtonText}>Seleccionar Foto</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            <TextInput style={styles.input} placeholder="Nombre" value={formData.nombre} onChangeText={(text) => setFormData({ ...formData, nombre: text })} />
+            <TextInput style={styles.input} placeholder="Apellido" value={formData.apellido} onChangeText={(text) => setFormData({ ...formData, apellido: text })} />
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+              <Text>{formData.fecha_nacimiento || 'Seleccionar fecha de nacimiento'}</Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker value={new Date(formData.fecha_nacimiento)} mode="date" display="default" onChange={handleDateChange} />
             )}
-          </TouchableOpacity>
-
-          <TextInput style={styles.input} placeholder="Nombre" value={formData.nombre} onChangeText={(text) => setFormData({ ...formData, nombre: text })} />
-          <TextInput style={styles.input} placeholder="Apellido" value={formData.apellido} onChangeText={(text) => setFormData({ ...formData, apellido: text })} />
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-            <Text>{formData.fecha_nacimiento || 'Seleccionar fecha de nacimiento'}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker value={new Date(formData.fecha_nacimiento)} mode="date" display="default" onChange={handleDateChange} />
-          )}
-          <TextInput style={styles.input} placeholder="Cédula" value={formData.ci} onChangeText={(text) => setFormData({ ...formData, ci: text })} />
-          <TextInput style={styles.input} placeholder="Dirección" value={formData.direccion} onChangeText={(text) => setFormData({ ...formData, direccion: text })} />
-          <TextInput style={styles.input} placeholder="Correo" value={formData.correo} onChangeText={(text) => setFormData({ ...formData, correo: text })} />
-          <Picker selectedValue={formData.genero} style={styles.picker} onValueChange={(itemValue) => setFormData({ ...formData, genero: itemValue })}>
-            <Picker.Item label="Varón" value="V" />
-            <Picker.Item label="Dama" value="D" />
-          </Picker>
-          <Picker selectedValue={formData.club_presidente_id} style={styles.picker} onValueChange={(itemValue) => setFormData({ ...formData, club_presidente_id: itemValue })}>
-            {clubes.map((club) => (
-              <Picker.Item key={club.id} label={club.nombre} value={club.id} />
-            ))}
-          </Picker>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={onClose} style={styles.cancelButton}><Text style={styles.buttonText}>Cancelar</Text></TouchableOpacity>
-            <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}><Text style={styles.buttonText}>Guardar</Text></TouchableOpacity>
-          </View>
+            <TextInput style={styles.input} placeholder="Cédula" value={formData.ci} onChangeText={(text) => setFormData({ ...formData, ci: text })} />
+            <TextInput style={styles.input} placeholder="Dirección" value={formData.direccion} onChangeText={(text) => setFormData({ ...formData, direccion: text })} />
+            <TextInput style={styles.input} placeholder="Correo" value={formData.correo} onChangeText={(text) => setFormData({ ...formData, correo: text })} />
+            <Picker selectedValue={formData.genero} style={styles.picker} onValueChange={(itemValue) => setFormData({ ...formData, genero: itemValue })}>
+              <Picker.Item label="Varón" value="V" />
+              <Picker.Item label="Dama" value="D" />
+            </Picker>
+            <Picker selectedValue={formData.club_presidente_id} style={styles.picker} onValueChange={(itemValue) => setFormData({ ...formData, club_presidente_id: itemValue })}>
+              {clubes.map((club) => (
+                <Picker.Item key={club.id} label={club.nombre} value={club.id} />
+              ))}
+            </Picker>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={onClose} style={styles.cancelButton}><Text style={styles.buttonText}>Cancelar</Text></TouchableOpacity>
+              <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}><Text style={styles.buttonText}>Guardar</Text></TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
+        <Toast />
       </View>
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Actualizando presidente...</Text>
+        </View>
+      </Modal>
     </Modal>
   );
 };

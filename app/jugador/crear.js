@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert,
+  ActivityIndicator ,
+  ScrollView
+} from 'react-native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker'; // Importa DateTimePicker
+import DateTimePicker from '@react-native-community/datetimepicker';
 import styles from '../../styles/crear_modal';
 import roleNames from '../../constants/roles';
-
+import Toast from 'react-native-toast-message';
+import { AntDesign } from '@expo/vector-icons';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const CrearJugadorModal = ({ isOpen, onClose, jugadorId, onJugadorCreated, onJugadorUpdated }) => {
+const CrearJugadorModal = ({ isOpen, onClose, onJugadorCreated }) => {
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -26,53 +37,9 @@ const CrearJugadorModal = ({ isOpen, onClose, jugadorId, onJugadorCreated, onJug
   const [croppedImage, setCroppedImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [clubes, setClubes] = useState([]);
-  const [showDatePicker, setShowDatePicker] = useState(false); // Estado para mostrar el DatePicker
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Estado para la fecha seleccionada
-
-  useEffect(() => {
-    if (jugadorId) {
-      const fetchJugador = async () => {
-        try {
-          const response = await axios.get(`${API_BASE_URL}/jugador/get_jugadorById/${jugadorId}`);
-          const jugador = response.data;
-          setFormData({
-            nombre: jugador.nombre,
-            apellido: jugador.apellido,
-            fecha_nacimiento: jugador.fecha_nacimiento.split('T')[0],
-            ci: jugador.ci,
-            direccion: jugador.direccion,
-            correo: jugador.correo,
-            genero: jugador.genero,
-            club_jugador_id: jugador.club_jugador_id,
-            roles: jugador.roles || [roleNames.Jugador],
-          });
-          setImagePreview(jugador.persona_imagen || null);
-          if (jugador.fecha_nacimiento) {
-            setSelectedDate(new Date(jugador.fecha_nacimiento)); // Establece la fecha seleccionada
-          }
-        } catch (error) {
-          Alert.alert('Error', 'No se pudo cargar el jugador');
-          console.error(jugadorId, error);
-        }
-      };
-      fetchJugador();
-    } else {
-      setFormData({
-        nombre: '',
-        apellido: '',
-        fecha_nacimiento: '',
-        ci: '',
-        direccion: '',
-        correo: '',
-        genero: 'V',
-        club_jugador_id: null,
-        roles: [roleNames.Jugador],
-      });
-      setImagePreview(null);
-      setCroppedImage(null);
-      setSelectedDate(new Date()); // Restablece la fecha seleccionada
-    }
-  }, [jugadorId]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchClubes = async () => {
@@ -112,27 +79,39 @@ const CrearJugadorModal = ({ isOpen, onClose, jugadorId, onJugadorCreated, onJug
   };
 
   const handleChange = (name, value) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: '',
-    }));
+    setFormData({ ...formData, [name]: value });
+    setErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
   };
 
   const handleDateChange = (event, date) => {
-    setShowDatePicker(false); // Oculta el DatePicker
+    setShowDatePicker(false);
     if (date) {
       setSelectedDate(date);
       setFormData({
         ...formData,
-        fecha_nacimiento: date.toISOString().split('T')[0], // Formato YYYY-MM-DD
+        fecha_nacimiento: date.toISOString().split('T')[0],
       });
     }
   };
-
+  
+  const resetForm = () => {
+    setFormData({
+      nombre: '',
+      apellido: '',
+      fecha_nacimiento: '',
+      ci: '',
+      direccion: '',
+      correo: '',
+      genero: 'V',
+      club_jugador_id: null,
+      roles: [roleNames.Jugador],
+    });
+    setImagePreview(null);
+    setCroppedImage(null);
+    setErrors({});
+    setSelectedDate(new Date());
+  };
+  
   const validateForm = () => {
     const newErrors = {};
     if (!formData.nombre) newErrors.nombre = 'El campo nombre es obligatorio';
@@ -146,63 +125,76 @@ const CrearJugadorModal = ({ isOpen, onClose, jugadorId, onJugadorCreated, onJug
   };
 
   const handleSubmit = async () => {
+    setErrors({});
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
-  
+
     const data = new FormData();
-    data.append('nombre', formData.nombre);
-    data.append('apellido', formData.apellido);
-    data.append('fecha_nacimiento', formData.fecha_nacimiento);
-    data.append('ci', formData.ci);
-    data.append('direccion', formData.direccion);
-    data.append('correo', formData.correo);
-    data.append('genero', formData.genero);
-    data.append('roles', JSON.stringify(formData.roles)); // Enviar roles como JSON
-    data.append('club_jugador_id', formData.club_jugador_id || null);
-    data.append('club_presidente_id', formData.club_presidente_id || null);
-    data.append('club_delegado_id', formData.club_delegado_id || null);
-  
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'roles') {
+        data.append(key, JSON.stringify(value));
+      } else {
+        data.append(key, value);
+      }
+    });
+
     if (croppedImage) {
       const fileName = croppedImage.split('/').pop();
       data.append('image', {
         uri: croppedImage,
         type: 'image/jpeg',
-        name: fileName || 'arbitro_image.jpg',
+        name: fileName || 'jugador_image.jpg',
       });
     }
-  
+    setLoading(true);
+
     try {
-      if (arbitroId) {
-        await axios.put(`${API_BASE_URL}/persona/update_persona_with_roles/${arbitroId}`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        onArbitroUpdated();
-      } else {
-        await axios.post(`${API_BASE_URL}/persona/post_persona`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        onArbitroCreated();
-      }
+      await axios.post(`${API_BASE_URL}/persona/post_persona`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onJugadorCreated();
       onClose();
+      resetForm();
+      Toast.show({
+        type: 'success',
+        text1: 'Jugador registrado con éxito',
+        position: 'bottom',
+      });
     } catch (error) {
-      Alert.alert('Error', 'Ocurrió un error al guardar el árbitro');
-      console.error('Error al guardar el árbitro:', error.response?.data || error.message);
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.mensaje ||
+        'Error al registrar jugador';
+
+      Toast.show({
+        type: 'error',
+        text1: msg,
+        position: 'bottom',
+      });
+
+    }finally {
+      setLoading(false); 
     }
   };
+
   return (
     <Modal visible={isOpen} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{jugadorId ? 'Editar Jugador' : 'Registrar Jugador'}</Text>
-
-          <TouchableOpacity style={styles.fileButton} onPress={handleSelectImage}>
-            <Text style={styles.fileButtonText}>Seleccionar imagen*</Text>
-          </TouchableOpacity>
-          {imagePreview && <Image source={{ uri: imagePreview }} style={styles.imagePreview} />}
-
+          <Text style={styles.modalTitle}>Registrar Jugador</Text>
+          <ScrollView>
+            <View style={{ alignItems: 'center', marginBottom: 15 }}>
+              <TouchableOpacity style={styles.fileButton} onPress={handleSelectImage}>
+                {imagePreview ? (
+                  <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
+                ) : (
+                  <AntDesign name="camera" size={24} color="black" />
+                )}
+              </TouchableOpacity>
+            </View>
           <TextInput
             style={styles.input}
             placeholder="Nombre*"
@@ -275,12 +267,22 @@ const CrearJugadorModal = ({ isOpen, onClose, jugadorId, onJugadorCreated, onJug
               <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>{jugadorId ? 'Guardar Cambios' : 'Registrar'}</Text>
+              <Text style={styles.buttonText}>Registrar</Text>
             </TouchableOpacity>
           </View>
+          </ScrollView>          
         </View>
+        <Toast />
       </View>
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Registrando jugador...</Text>
+        </View>
+      </Modal>
+
     </Modal>
+    
   );
 };
 

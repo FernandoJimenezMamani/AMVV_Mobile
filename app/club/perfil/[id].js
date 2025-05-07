@@ -24,6 +24,7 @@ import Club_defecto from '../../../assets/img/Default_Imagen_Club.webp';
 // Importa los modals
 import PerfilPresidenteModal from '../../presidente_club/perfil/[id]';
 import EditarEquipoModal from '../../equipo/editar/[id]';
+import RegistroEquipo from '../../equipo/registrar/[id]';
 import styles from '../../../styles/club/perfil';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -39,7 +40,7 @@ const PerfilClub = () => {
   const [delegadosClub, setDelegadosClub] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
-
+  const [showTeamsModal, setShowTeamsModal] = useState(false);
   useEffect(() => {
     fetchClubAndTeams();
   }, [id]);
@@ -108,7 +109,11 @@ const PerfilClub = () => {
   };
 
   const handleCreateTeam = () => {
-    router.push(`/equipo/crear_equipo/${id}`);
+    setShowTeamsModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowTeamsModal(false);
   };
 
   const handleTeamClick = (equipoId) => {
@@ -189,7 +194,6 @@ const PerfilClub = () => {
       ) : (
         <TouchableOpacity style={styles.presidentContainer} onPress={handleProfileClick}>
           <Text style={styles.presidentText}>Presidente: {club.presidente_nombre}</Text>
-          <Image source={getImagenPerfil()} style={styles.presidentImage} />
         </TouchableOpacity>
       )}
 
@@ -266,6 +270,13 @@ const PerfilClub = () => {
         onClose={handleCloseEditModal}
         equipoId={equipoSeleccionado}
         onEquipoUpdated={fetchClubAndTeams}
+      />
+
+      <RegistroEquipo
+        isOpen={showTeamsModal}
+        onClose={handleCloseModal}
+        onTeamCreated={fetchClubAndTeams}
+        clubId={club.club_id}
       />
 
       <Toast />

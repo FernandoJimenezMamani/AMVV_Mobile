@@ -6,7 +6,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import styles from '../../../styles/index_tabla';
 //import RegistroJugadorClub from './RegistrarJugadorByClub/[id]';
 import RegistroJugadorClub from '../RegistrarJugadorByCLub/[id]';
-
+import defaultUserMenIcon from '../../../assets/img/Default_Imagen_Men.webp'
+import defaultUserWomenIcon from '../../../assets/img/Default_Imagen_Women.webp'
+import PerfilJugadorModal from '../perfil/[id]';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaJugadoresClub = () => {
@@ -15,7 +17,8 @@ const ListaJugadoresClub = () => {
   const [showFormModal, setShowFormModal] = useState(false);
   const { id } = useLocalSearchParams();
   const router = useRouter();
-
+  const [perfilJugadorVisible, setPerfilJugadorVisible] = useState(false);
+  const [jugadorIdPerfil, setJugadorIdPerfil] = useState(null);
   useEffect(() => {
     fetchJugadores();
   }, [id]);
@@ -32,7 +35,8 @@ const ListaJugadoresClub = () => {
   };
 
   const handleProfileClick = (jugadorId) => {
-    router.push(`/persona/perfil/${jugadorId}`);
+    setJugadorIdPerfil(jugadorId);
+    setPerfilJugadorVisible(true);
   };
 
   const handleAssignJugador = () => {
@@ -47,6 +51,14 @@ const ListaJugadoresClub = () => {
     return <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />;
   }
 
+  const getImagenPerfil = (arbitro) => {
+      if (arbitro.imagen_persona) {
+        return { uri: arbitro.imagen_persona }; 
+      }
+      return arbitro.genero_persona === 'V'
+        ? defaultUserMenIcon
+        : defaultUserWomenIcon;
+    };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Lista de Jugadores</Text>
@@ -61,7 +73,7 @@ const ListaJugadoresClub = () => {
         keyExtractor={(item) => item.jugador_id.toString()}
         renderItem={({ item }) => (
           <View style={styles.clubContainer}>
-            <Image source={{ uri: item.imagen_persona }} style={styles.clubImage} />
+            <Image source={getImagenPerfil(item)} style={styles.clubImage} />
             <View style={styles.clubInfo}>
               <Text style={styles.clubName}>{item.nombre_persona} {item.apellido_persona}</Text>
               <Text style={styles.clubDescription}>CI: {item.ci_persona}</Text>
@@ -71,6 +83,12 @@ const ListaJugadoresClub = () => {
             </TouchableOpacity>
           </View>
         )}
+      />
+
+      <PerfilJugadorModal
+        isOpen={perfilJugadorVisible}
+        onClose={() => setPerfilJugadorVisible(false)}
+        id={jugadorIdPerfil}
       />
     </View>
   );

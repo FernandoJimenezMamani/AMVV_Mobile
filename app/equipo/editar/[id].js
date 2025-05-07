@@ -194,7 +194,7 @@ const EditarEquipoModal = ({ isOpen, onClose, equipoId, onEquipoUpdated }) => {
               <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Guardar Cambios</Text>
+              <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
           </View>
         </View>
