@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import styles from '../../styles/crear_modal';
-
+import Toast from 'react-native-toast-message';
+import { AntDesign } from '@expo/vector-icons';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated }) => {
@@ -16,6 +17,7 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -152,17 +154,28 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
           name: fileName || 'club_image.jpg',
         });
       }
+      setLoading(true);
       try {
         await axios.post(`${API_BASE_URL}/club/post_club`, data, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         onClubCreated();
+        onClose();
+        Toast.show({
+          type: 'success',
+          text1: 'Club registrado con éxito',
+          position: 'bottom',
+        });
       } catch (error) {
-        console.error('Error al crear el club:', error);
-        Alert.alert('Error', 'Ocurrió un error al guardar el club');
+        Toast.show({
+          type: 'error',
+          text1: 'Error al registrar club',
+          position: 'bottom',
+        });
+      }finally {
+        setLoading(false); 
       }
     }
-    onClose();
   };
 
   return (
@@ -173,7 +186,7 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
           <TextInput style={styles.input} placeholder="Nombre*" value={formData.nombre} onChangeText={(text) => handleChange('nombre', text)} />
           <TextInput style={styles.input} placeholder="Descripción*" value={formData.descripcion} onChangeText={(text) => handleChange('descripcion', text)} multiline />
           <TouchableOpacity style={styles.fileButton} onPress={handleSelectImage}>
-            <Text style={styles.fileButtonText}>Seleccionar imagen*</Text>
+            <AntDesign name="camera" size={24} color="black" />
           </TouchableOpacity>
           {imagePreview && <Image source={{ uri: imagePreview }} style={styles.imagePreview} />}
           <View style={styles.buttonContainer}>
@@ -185,7 +198,14 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
             </TouchableOpacity>
           </View>
         </View>
+        <Toast />
       </View>
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Registrando club...</Text>
+        </View>
+      </Modal>
     </Modal>
   );
 };

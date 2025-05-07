@@ -16,7 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import styles from '../../styles/crear_modal';
-
+import Toast from 'react-native-toast-message';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
@@ -30,10 +30,14 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && personaId) fetchArbitro();
+    if (isOpen && personaId) 
+      setImagePreview(null);      
+      setCroppedImage(null);
+      fetchArbitro();
   }, [isOpen, personaId]);
 
   const fetchArbitro = async () => {
+    if(!personaId)return;
     setLoading(true);
     try {
       const res = await axios.get(`${API_BASE_URL}/arbitro/get_arbitroById/${personaId}`);
@@ -76,15 +80,30 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
     if (croppedImage) {
       data.append('image', { uri: croppedImage, name: 'photo.jpg', type: 'image/jpeg' });
     }
-
+    setLoading(true);
     try {
       await axios.put(`${API_BASE_URL}/persona/update_persona_with_roles/${personaId}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       onPersonaUpdated();
       onClose();
+      Toast.show({
+        type: 'success',
+        text1: 'Arbitro actualizado con éxito',
+        position: 'bottom',
+      });
     } catch (err) {
-      Alert.alert('Error', 'No se pudo actualizar el árbitro.');
+      const msg =
+      err.response?.data?.message ||
+      err.response?.data?.mensaje ||
+        'Error al registrar arbitro';
+      Toast.show({
+        type: 'error',
+        text1: msg,
+        position: 'bottom',
+      });
+    }finally {
+      setLoading(false); 
     }
   };
 
@@ -95,18 +114,16 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Editar Árbitro</Text>
-          {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
             <ScrollView>
-              <TouchableOpacity onPress={handleImageSelect} style={styles.fileButton}>
-                {imagePreview ? (
-                  <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
-                ) : (
-                  <Text style={styles.fileButtonText}>Seleccionar Foto</Text>
-                )}
-              </TouchableOpacity>
-
+              <View style={{ alignItems: 'center', marginBottom: 15 }}>
+                <TouchableOpacity onPress={handleImageSelect} style={styles.fileButton}>
+                  {imagePreview ? (
+                      <Image source={{ uri: imagePreview }} style={styles.imagePreview} />
+                  ) : (
+                      <Text style={styles.fileButtonText}>Seleccionar imagen</Text>
+                  )}
+                  </TouchableOpacity>
+              </View>         
               {['nombre', 'apellido', 'ci', 'direccion', 'correo'].map((f, i) => (
                 <TextInput key={i} style={styles.input} placeholder={f} value={formData[f]} onChangeText={(t) => setFormData({ ...formData, [f]: t })} />
               ))}
@@ -140,9 +157,15 @@ const EditarArbitro = ({ isOpen, onClose, personaId, onPersonaUpdated }) => {
                 </TouchableOpacity>
               </View>
             </ScrollView>
-          )}
         </View>
+        <Toast />
       </View>
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Actualizando jugador...</Text>
+        </View>
+      </Modal>
     </Modal>
   );
 };

@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   teamCard: {
-    backgroundColor: '#3D8FA4',
+    backgroundColor: '#507788',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,

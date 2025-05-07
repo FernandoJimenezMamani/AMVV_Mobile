@@ -71,6 +71,13 @@ const styles = StyleSheet.create({
   picker: {
     width: '100%',
   },
+  loadingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  }
+  
 });
 
 export default styles;
