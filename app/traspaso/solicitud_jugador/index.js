@@ -5,7 +5,7 @@ import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import styles from '../../../styles/index_tabla';
+import styles from '../../../styles/index_tabla_solicitud';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -72,21 +72,21 @@ const Indice = () => {
     switch (estado) {
       case 'PENDIENTE':
         return (
-          <View style={styles.statusRow}>
+          <View style={styles.statusBadge}>
             <MaterialIcons name="pending" size={20} color="orange" />
             <Text style={styles.statusText}>Pendiente</Text>
           </View>
         );
       case 'APROBADO':
         return (
-          <View style={styles.statusRow}>
+          <View style={styles.statusBadge}>
             <MaterialIcons name="check-circle" size={20} color="green" />
             <Text style={styles.statusText}>Aprobado</Text>
           </View>
         );
       case 'RECHAZADO':
         return (
-          <View style={styles.statusRow}>
+          <View style={styles.statusBadge}>
             <MaterialIcons name="cancel" size={20} color="red" />
             <Text style={styles.statusText}>Rechazado</Text>
           </View>
@@ -115,19 +115,20 @@ const Indice = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View style={styles.cardHeader}>
+        <TouchableOpacity onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#143E42" />
         </TouchableOpacity>
-        <Text style={styles.title}>Mis Solicitudes de Traspaso</Text>
+        <Text style={styles.userName}>Mis Solicitudes de Traspaso</Text>
+        <View style={{ width: 24 }} />
       </View>
 
       {/* Filtro de Campeonato */}
-      <View style={styles.pickerContainer}>
+      <View style={styles.infoSection}>
         <Picker
           selectedValue={selectedCampeonato}
           onValueChange={setSelectedCampeonato}
-          style={styles.picker}
+          style={{ backgroundColor: 'white' }}
           dropdownIconColor="#333"
         >
           <Picker.Item label="Seleccione campeonato" value="" enabled={false} color="#999" />
@@ -142,11 +143,11 @@ const Indice = () => {
       </View>
 
       {/* Filtro de Estado */}
-      <View style={styles.pickerContainer}>
+      <View style={styles.infoSection}>
         <Picker
           selectedValue={estadoFiltro}
           onValueChange={setEstadoFiltro}
-          style={styles.picker}
+          style={{ backgroundColor: 'white' }}
           dropdownIconColor="#333"
         >
           <Picker.Item label="Filtrar por estado" value="" enabled={false} color="#999" />
@@ -157,76 +158,102 @@ const Indice = () => {
         </Picker>
       </View>
 
-      <ScrollView style={styles.listContainer}>
-        {filteredSolicitudes.length > 0 ? (
-          filteredSolicitudes.map((solicitud) => (
-            <View key={solicitud.traspaso_id} style={styles.card}>
-              {/* Club Interesado */}
-              <View style={styles.row}>
-                <Text style={styles.label}>Club destino:</Text>
-                <Text style={styles.value}>{solicitud.club_destino_nombre}</Text>
-              </View>
+    <ScrollView style={styles.contentContainer}>
+  {filteredSolicitudes.length > 0 ? (
+    filteredSolicitudes.map((solicitud) => (
+      <View key={solicitud.traspaso_id} style={styles.card}>
+        <View style={styles.cardContent}>
+          {/* Club Interesado */}
+          <View style={styles.statusItem}>
+            <Text style={styles.statusLabel}>Club destino:</Text>
+            <Text style={styles.userName}>{solicitud.club_destino_nombre || 'No especificado'}</Text>
+          </View>
 
-              {/* Presidente Interesado */}
-              <View style={styles.row}>
-                <Text style={styles.label}>Presidente:</Text>
-                <Text style={styles.value}>{solicitud.nombre} {solicitud.apellido}</Text>
-              </View>
+          {/* Presidente Interesado */}
+          <View style={styles.statusItem}>
+            <Text style={styles.statusLabel}>Presidente:</Text>
+            <Text style={styles.userName}>
+              {solicitud.nombre ? `${solicitud.nombre} ${solicitud.apellido}` : 'No especificado'}
+            </Text>
+          </View>
 
-              {/* Fecha de Solicitud */}
-              <View style={styles.row}>
-                <Text style={styles.label}>Fecha:</Text>
-                <Text style={styles.value}>
-                  {new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES')}
-                </Text>
-              </View>
+          {/* Fecha de Solicitud */}
+          <View style={styles.statusItem}>
+            <Text style={styles.statusLabel}>Fecha:</Text>
+            <Text style={styles.userName}>
+              {solicitud.fecha_solicitud 
+                ? new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES') 
+                : 'No especificada'}
+            </Text>
+          </View>
 
-              {/* Estado */}
-              <View style={styles.row}>
-                <Text style={styles.label}>Tu respuesta:</Text>
-                <View style={styles.statusContainer}>
-                  {getStatusIcon(solicitud.estado_jugador)}
-                </View>
-              </View>
-
-              {/* Acción */}
-              <TouchableOpacity 
-                onPress={() => handleVerDetalle(solicitud.traspaso_id)}
-                style={[
-                  styles.actionButton,
-                  solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id ? styles.disabledButton : null
-                ]}
-                disabled={
-                  solicitudAceptadaActiva &&
-                  solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id
-                }
-              >
-                <Text style={styles.actionButtonText}>Ver Detalle</Text>
-                <MaterialIcons 
-                  name="chevron-right" 
-                  size={24} 
-                  color={
-                    solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id 
-                    ? '#ccc' 
-                    : '#3D8FA4'
-                  } 
-                />
-              </TouchableOpacity>
-              
-              {solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id && (
-                <Text style={styles.disabledText}>
-                  Ya has aceptado otra solicitud. Espera resolución del presidente.
-                </Text>
-              )}
+          {/* Estado */}
+          <View style={styles.statusItem}>
+            <Text style={styles.statusLabel}>Tu respuesta:</Text>
+            <View>
+              {getStatusIcon(solicitud.estado_jugador)}
             </View>
-          ))
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No hay solicitudes disponibles</Text>
+          </View>
+        </View>
+
+        {/* Acción */}
+        <TouchableOpacity 
+          onPress={() => handleVerDetalle(solicitud.traspaso_id)}
+          style={[
+            styles.actionButton,
+            solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id 
+              ? { opacity: 0.5 } 
+              : null
+          ]}
+          disabled={
+            solicitudAceptadaActiva &&
+            solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id
+          }
+        >
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={[
+              styles.actionButtonText,
+              solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id 
+                ? {color: '#ccc'} 
+                : null
+            ]}>
+              Ver Detalle
+            </Text>
+            <MaterialIcons 
+              name="chevron-right" 
+              size={24} 
+              color={
+                solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id 
+                ? '#ccc' 
+                : '#3D8FA4'
+              } 
+            />
+          </View>
+        </TouchableOpacity>
+        
+        {solicitudAceptadaActiva && solicitud.traspaso_id !== solicitudAceptadaActiva.traspaso_id && (
+          <View style={styles.infoSection}>
+            <Text style={[styles.statusLabel, { 
+              color: 'red', 
+              textAlign: 'center', 
+              padding: 8,
+              backgroundColor: '#fff5f5',
+              borderRadius: 6
+            }]}>
+              Ya has aceptado otra solicitud. Espera resolución del presidente.
+            </Text>
           </View>
         )}
-      </ScrollView>
+      </View>
+    ))
+  ) : (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No hay solicitudes disponibles</Text>
+    </View>
+  )}
+</ScrollView>
     </View>
   );
 };
+
 export default Indice;

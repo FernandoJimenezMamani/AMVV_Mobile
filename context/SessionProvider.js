@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { View, ActivityIndicator } from 'react-native';
-
+import axios from 'axios';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const SessionContext = createContext();
 
 export const useSession = () => {
@@ -79,18 +80,33 @@ export const SessionProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    setUser(null);
-    setToken(null);
-    setTokenData(null);
-    setActiveRole(null);
-    setIsLoggedIn(false); // ✅ Resetear estado
-
     try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('activeRole');
+            // 3. Intentar eliminar el token push (operación que puede fallar)
+            const storedToken = token; // Usamos el token en memoria antes de limpiarlo
+            if (storedToken) {
+              axios.delete(`${API_BASE_URL}/notification/delete-push-token`, {
+                headers: {
+                  'Authorization': `Bearer ${storedToken}`
+                },
+                timeout: 3000 // Timeout corto para no bloquear
+              }).catch(error => {
+                console.error('Error al eliminar token push (no crítico):', error);
+              });
+            }
+      // 1. Limpiar estados primero para que la UI responda inmediatamente
+      setUser(null);
+      setToken(null);
+      setTokenData(null);
+      setActiveRole(null);
+      setIsLoggedIn(false);
+  
+      // 2. Limpiar AsyncStorage (operación rápida)
+      await AsyncStorage.multiRemove(['token', 'user', 'activeRole']);
+  
+      return true;
     } catch (error) {
-      console.error('Error al eliminar la sesión:', error);
+      console.error('Error en logout:', error);
+      return false;
     }
   };
 

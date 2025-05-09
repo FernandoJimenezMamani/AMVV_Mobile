@@ -30,32 +30,37 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
     if (campeonatoId) fetchSolicitudes();
   }, [campeonatoId]);
 
-  const getStatusIcon = (estado) => {
+  const getStatusBadge = (estado) => {
+    let backgroundColor, iconName, iconColor;
+    
     switch (estado) {
       case 'PENDIENTE':
-        return (
-          <View style={styles.statusRow}>
-            <MaterialIcons name="pending" size={20} color="orange" />
-            <Text style={styles.statusText}>Pendiente</Text>
-          </View>
-        );
+        backgroundColor = '#FFF3E0';
+        iconName = "pending";
+        iconColor = "#FFA000";
+        break;
       case 'APROBADO':
-        return (
-          <View style={styles.statusRow}>
-            <MaterialIcons name="check-circle" size={20} color="green" />
-            <Text style={styles.statusText}>Aprobado</Text>
-          </View>
-        );
+        backgroundColor = '#E8F5E9';
+        iconName = "check-circle";
+        iconColor = "#4CAF50";
+        break;
       case 'RECHAZADO':
-        return (
-          <View style={styles.statusRow}>
-            <MaterialIcons name="cancel" size={20} color="red" />
-            <Text style={styles.statusText}>Rechazado</Text>
-          </View>
-        );
+        backgroundColor = '#FFEBEE';
+        iconName = "cancel";
+        iconColor = "#F44336";
+        break;
       default:
         return null;
     }
+    
+    return (
+      <View style={[styles.statusBadge, { backgroundColor }]}>
+        <MaterialIcons name={iconName} size={16} color={iconColor} />
+        <Text style={[styles.statusText, { color: iconColor }]}>
+          {estado.charAt(0) + estado.slice(1).toLowerCase()}
+        </Text>
+      </View>
+    );
   };
 
   const getImagenPerfil = (img, genero) => {
@@ -75,84 +80,84 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
   });
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {filteredSolicitudes.length > 0 ? (
         filteredSolicitudes.map(s => (
           <View key={s.traspaso_id} style={styles.card}>
-            {/* Jugador */}
-            <View style={styles.row}>
-              <Text style={styles.label}>Jugador:</Text>
-              <View style={styles.playerInfo}>
-                <Image
-                  source={getImagenPerfil(s.imagen_jugador, s.genero_persona)}
-                  style={styles.image}
-                />
-                <View>
-                  <Text style={styles.playerName}>
-                    {s.nombre_jugador} {s.apellido_jugador}
-                  </Text>
-                  <Text style={styles.playerRole}>Jugador</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Club Interesado */}
-            <View style={styles.row}>
-              <Text style={styles.label}>Club destino:</Text>
-              <View style={styles.playerInfo}>
-                <Image
-                  source={getImagenClub(s.club_imagen)}
-                  style={styles.image}
-                />
-                <Text style={styles.clubName}>{s.club_destino_nombre}</Text>
-              </View>
-            </View>
-
-            {/* Presidente Interesado */}
-            <View style={styles.row}>
-              <Text style={styles.label}>Presidente:</Text>
-              <View style={styles.playerInfo}>
-                <Image
-                  source={getImagenPerfil(s.imagen_presidente, s.genero)}
-                  style={styles.image}
-                />
-                <View>
-                  <Text style={styles.playerName}>
-                    {s.nombre} {s.apellido}
-                  </Text>
-                  <Text style={styles.playerRole}>Presidente</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Fecha de Solicitud */}
-            <View style={styles.row}>
-              <Text style={styles.label}>Fecha:</Text>
-              <Text style={styles.value}>
-                {new Date(s.fecha_solicitud).toLocaleDateString('es-ES')}
+            {/* Header con fecha y estado */}
+            <View style={styles.cardHeader}>
+              <Text style={styles.dateText}>
+                {new Date(s.fecha_solicitud).toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric'
+                })}
               </Text>
+              {getStatusBadge(s.estado_club_origen)}
             </View>
-
-            {/* Estado */}
-            <View style={styles.row}>
-              <Text style={styles.label}>Tu respuesta:</Text>
-              <View style={styles.statusContainer}>
-                {getStatusIcon(s.estado_club_origen)}
+            
+            {/* Contenido principal */}
+            <View style={styles.cardContent}>
+              {/* Jugador */}
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionTitle}>Jugador</Text>
+                <View style={styles.userInfo}>
+                  <Image
+                    source={getImagenPerfil(s.imagen_jugador, s.genero_persona)}
+                    style={styles.userImage}
+                  />
+                  <View style={styles.userDetails}>
+                    <Text style={styles.userName}>
+                      {s.nombre_jugador} {s.apellido_jugador}
+                    </Text>
+                    <Text style={styles.userRole}>Jugador</Text>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Club destino */}
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionTitle}>Club destino</Text>
+                <View style={styles.clubInfo}>
+                  <Image
+                    source={getImagenClub(s.club_imagen)}
+                    style={styles.clubImage}
+                  />
+                  <Text style={styles.clubName}>{s.club_destino_nombre}</Text>
+                </View>
+              </View>
+              
+              {/* Presidente */}
+              <View style={styles.infoSection}>
+                <Text style={styles.sectionTitle}>Presidente</Text>
+                <View style={styles.userInfo}>
+                  <Image
+                    source={getImagenPerfil(s.imagen_presidente, s.genero)}
+                    style={styles.userImage}
+                  />
+                  <View style={styles.userDetails}>
+                    <Text style={styles.userName}>
+                      {s.nombre} {s.apellido}
+                    </Text>
+                    <Text style={styles.userRole}>Presidente</Text>
+                  </View>
+                </View>
               </View>
             </View>
-
-            {/* Acción */}
+            
+            {/* Botón de acción */}
             <TouchableOpacity 
               onPress={() => router.push(`/traspaso/detalle_presidente/${s.traspaso_id}`)}
               style={styles.actionButton}
             >
-              <Text style={styles.actionButtonText}>Ver Detalle</Text>
+              <Text style={styles.actionButtonText}>Ver detalles completos</Text>
               <MaterialIcons name="chevron-right" size={24} color="#3D8FA4" />
             </TouchableOpacity>
           </View>
         ))
       ) : (
         <View style={styles.emptyContainer}>
+          <MaterialIcons name="info-outline" size={40} color="#777" />
           <Text style={styles.emptyText}>No hay solicitudes disponibles</Text>
         </View>
       )}
