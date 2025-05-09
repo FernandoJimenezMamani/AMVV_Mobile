@@ -27,7 +27,6 @@ const ListaCategorias = () => {
       setCategorias(response.data);
     } catch (error) {
       Alert.alert('Error', 'No se pudieron cargar las categorías');
-      console.error('Error al obtener las categorías:', error);
     }
   };
 
@@ -76,7 +75,6 @@ const ListaCategorias = () => {
       fetchCategorias();
     } catch (error) {
       Alert.alert('Error', 'No se pudo eliminar la categoría');
-      console.error('Error al eliminar la categoría:', error);
     }
   };
 
@@ -88,7 +86,6 @@ const ListaCategorias = () => {
       fetchCategorias();
     } catch (error) {
       toast.error('Error al activar el Categoria');
-      console.error('Error al activar Categoria:', error);
     }
   };
 
@@ -116,14 +113,17 @@ const ListaCategorias = () => {
         <TouchableOpacity onPress={() => handleEditClick(item.id)}>
           <MaterialIcons name="edit" size={24} color="#9DAC42" />
         </TouchableOpacity>
+        
+        {/*
         <Switch
-           value={item.eliminado !== 'S'}
-           onValueChange={() =>
+          value={item.eliminado !== 'S'}
+          onValueChange={() =>
             item.eliminado === 'S'
-               ? handleActivateCategoria(item.id)
-               : handleDeleteClick(item.id)
-           }
-         />
+              ? handleActivateCategoria(item.id)
+              : handleDeleteClick(item.id)
+          }
+        />
+        */}
       </View>
     </View>
   );

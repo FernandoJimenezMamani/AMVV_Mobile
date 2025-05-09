@@ -6,31 +6,32 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  FlatList,
   ScrollView
 } from 'react-native';
 import axios from 'axios';
-import { useRouter, useLocalSearchParams, router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import estadosPartidoCampMapping from '../../../constants/estado_partido';
+import Club_defecto from '../../../assets/img/Club_defecto.png';
 import ErrorIcon from 'react-native-vector-icons/MaterialIcons';
 import PendingIcon from 'react-native-vector-icons/MaterialIcons';
 import CheckCircleIcon from 'react-native-vector-icons/MaterialIcons';
-import Club_defecto from '../../../assets/img/Club_defecto.png';
-import styles from '../../../styles/partidos/index_partido';
-import { SessionProvider, useSession } from '../../../context/SessionProvider';
+import { useSession } from '../../../context/SessionProvider';
 import { Picker } from '@react-native-picker/picker';
+import styles from '../../../styles/partidos/index_partido';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const PartidosArbitroList = () => {
+const PartidosJugadorList = () => {
   const [partidos, setPartidos] = useState([]);
   const [agrupacion, setAgrupacion] = useState('todos');
+  const [resultados, setResultados] = useState({});
   const [campeonatoId, setCampeonatoId] = useState(null);
   const [estadoFiltro, setEstadoFiltro] = useState('todos');
   const [loading, setLoading] = useState(true);
-  const [resultados, setResultados] = useState({});
   const navigation = useRouter();
-  const { user, token, logout } = useSession();
+  const { user } = useSession();
+
   useEffect(() => {
     const fetchCampeonatos = async () => {
       try {
@@ -48,7 +49,7 @@ const PartidosArbitroList = () => {
     const fetchPartidos = async () => {
       if (!user?.id || !campeonatoId) return;
       try {
-        const response = await axios.get(`${API_BASE_URL}/arbitro/partidos/arbitro/${user.id}/${campeonatoId}`);
+        const response = await axios.get(`${API_BASE_URL}/jugador/partidos/jugador/${user.id}/${campeonatoId}`);
         setPartidos(response.data);
         setLoading(false);
       } catch (error) {
@@ -57,13 +58,12 @@ const PartidosArbitroList = () => {
       }
     };
     fetchPartidos();
-  }, [campeonatoId]);
+  }, [user, campeonatoId]);
 
   useEffect(() => {
     const fetchResultados = async () => {
       const partidosFinalizados = partidos.filter(p => p.estado === estadosPartidoCampMapping.Finalizado);
       const resultadosTemp = {};
-  
       for (const partido of partidosFinalizados) {
         try {
           const response = await axios.get(`${API_BASE_URL}/partidos/ganador/${partido.id}`);
@@ -72,34 +72,25 @@ const PartidosArbitroList = () => {
           console.error(`Error al obtener resultado para partido ${partido.id}:`, error);
         }
       }
-  
       setResultados(resultadosTemp);
     };
-  
     if (partidos.length > 0) {
       fetchResultados();
     }
   }, [partidos]);
 
-  const formatDate = (fecha) => {
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(fecha).toLocaleDateString('es-ES', options);
-  };
-
-  const formatTime = (fecha) => {
-    const options = { hour: '2-digit', minute: '2-digit', hour12: false };
-    return new Date(fecha).toLocaleTimeString('es-ES', options);
-  };
+  const formatDate = (fecha) => new Date(fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const formatTime = (fecha) => new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
 
   const getEstadoPartidoIcono = (fecha, estado) => {
     const ahora = new Date();
     const fechaPartido = new Date(fecha);
     if (fechaPartido < ahora && estado === estadosPartidoCampMapping.Confirmado)
-      return { icono: <ErrorIcon name="error" size={20} />, clase: 'alerta', tooltip: 'Partido vencido, resultados no registrados' };
+      return { icono: <ErrorIcon name="error" size={20} />, clase: 'alerta' };
     if (fechaPartido >= ahora && estado === estadosPartidoCampMapping.Confirmado)
-      return { icono: <PendingIcon name="pending" size={20} />, clase: 'pendiente', tooltip: 'Partido confirmado, en espera' };
+      return { icono: <PendingIcon name="pending" size={20} />, clase: 'pendiente' };
     if (estado === estadosPartidoCampMapping.Finalizado)
-      return { icono: <CheckCircleIcon name="check-circle" size={20} />, clase: 'finalizado', tooltip: 'Partido finalizado' };
+      return { icono: <CheckCircleIcon name="check-circle" size={20} />, clase: 'finalizado' };
     return null;
   };
 
@@ -114,11 +105,7 @@ const PartidosArbitroList = () => {
   const handlePartidoClick = (partidoId) => {
     navigation.navigate({
       pathname: 'partidos/detalle_partido',
-      params: { 
-        partidoId,
-        campeonatoId,
-        
-      }
+      params: { partidoId, campeonatoId }
     });
   };
 
@@ -135,70 +122,47 @@ const PartidosArbitroList = () => {
     return agrupados;
   };
 
-  const getImagenClub = (uri) => {
-    return uri ? { uri } : Club_defecto;
-  };
+  const getImagenClub = (uri) => uri ? { uri } : Club_defecto;
 
   const renderPartidoCard = (partido) => {
     const estadoPartido = getEstadoPartidoIcono(partido.fecha, partido.estado);
     const resultado = resultados[partido.id];
-    
     return (
       <TouchableOpacity
         key={partido.id}
         style={styles.card}
         onPress={() => handlePartidoClick(partido.id)}
       >
-        {partido.estado === estadosPartidoCampMapping.Vivo && (
-          <View style={styles.liveIndicator} />
-        )}
-
         {estadoPartido && (
           <View style={[styles.estadoIcon, styles[estadoPartido.clase]]}>
             {estadoPartido.icono}
           </View>
         )}
-
         <View style={styles.teamContainer}>
           <View style={styles.team}>
-            <Image 
-              source={getImagenClub(partido.equipo_local_imagen)} 
-              style={styles.teamLogo} 
-            />
+            <Image source={getImagenClub(partido.equipo_local_imagen)} style={styles.teamLogo} />
             <Text style={styles.teamName}>{partido.equipo_local_nombre}</Text>
           </View>
-
           <Text style={styles.vsText}>VS</Text>
-
           <View style={styles.team}>
-            <Image 
-              source={getImagenClub(partido.equipo_visitante_imagen)} 
-              style={styles.teamLogo} 
-            />
+            <Image source={getImagenClub(partido.equipo_visitante_imagen)} style={styles.teamLogo} />
             <Text style={styles.teamName}>{partido.equipo_visitante_nombre}</Text>
           </View>
         </View>
-
         {partido.estado === estadosPartidoCampMapping.Finalizado && resultado && (
           <View style={styles.resultContainer}>
             {resultado.walkover ? (
               <Text style={styles.walkoverText}>
-                Walkover {resultado.walkover === "L" ? partido.equipo_local_nombre :
-                resultado.walkover === "V" ? partido.equipo_visitante_nombre :
-                "ambos equipos"}
+                Walkover {resultado.walkover === 'L' ? partido.equipo_local_nombre : resultado.walkover === 'V' ? partido.equipo_visitante_nombre : 'ambos equipos'}
               </Text>
             ) : (
-              <Text style={styles.scoreText}>
-                {resultado.ganador} ganó {resultado.marcador}
-              </Text>
+              <Text style={styles.scoreText}>{resultado.ganador} ganó {resultado.marcador}</Text>
             )}
           </View>
         )}
-
         <View style={styles.infoContainer}>
           <Text style={styles.infoText}>{formatDate(partido.fecha)}</Text>
-          {(partido.estado === estadosPartidoCampMapping.Confirmado || 
-            partido.estado === estadosPartidoCampMapping.Vivo) && (
+          {(partido.estado === estadosPartidoCampMapping.Confirmado || partido.estado === estadosPartidoCampMapping.Vivo) && (
             <>
               <Text style={styles.infoText}>Hora: {formatTime(partido.fecha)}</Text>
               <Text style={styles.infoText}>Lugar: {partido.lugar_nombre}</Text>
@@ -210,23 +174,13 @@ const PartidosArbitroList = () => {
   };
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#3D8FA4" />
-      </View>
-    );
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color="#3D8FA4" /></View>;
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Icon name="arrow-back" size={24} color="#143E42" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Partidos Asignados</Text>
+        <Text style={styles.title}>Mis Partidos</Text>
       </View>
 
       <View style={styles.filterContainer}>
@@ -243,7 +197,6 @@ const PartidosArbitroList = () => {
             <Picker.Item label="Fecha y Lugar" value="fecha_lugar" />
           </Picker>
         </View>
-
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Filtrar por estado:</Text>
           <Picker
@@ -258,25 +211,22 @@ const PartidosArbitroList = () => {
         </View>
       </View>
 
+      {agrupacion === 'todos' ? (
+        filtrarPartidosPorEstado(partidos).map(partido => renderPartidoCard(partido))
+      ) : (
+        Object.entries(agruparPartidos(filtrarPartidosPorEstado(partidos))).map(([clave, partidosGrupo]) => (
+          <View key={clave} style={styles.groupContainer}>
+            <Text style={styles.groupTitle}>{clave}</Text>
+            {partidosGrupo.map(partido => renderPartidoCard(partido))}
+          </View>
+        ))
+      )}
 
-      <ScrollView style={styles.listContainer}>
-        {agrupacion === 'todos' ? (
-          filtrarPartidosPorEstado(partidos).map(partido => renderPartidoCard(partido))
-        ) : (
-          Object.entries(agruparPartidos(filtrarPartidosPorEstado(partidos))).map(([clave, partidosGrupo]) => (
-            <View key={clave} style={styles.groupContainer}>
-              <Text style={styles.groupTitle}>{clave}</Text>
-              {partidosGrupo.map(partido => renderPartidoCard(partido))}
-            </View>
-          ))
-        )}
-
-        {partidos.length === 0 && (
-          <Text style={styles.emptyText}>No hay partidos asignados</Text>
-        )}
-      </ScrollView>
-    </View>
+      {partidos.length === 0 && (
+        <Text style={styles.emptyText}>No hay partidos asignados</Text>
+      )}
+    </ScrollView>
   );
 };
 
-export default PartidosArbitroList;
+export default PartidosJugadorList;

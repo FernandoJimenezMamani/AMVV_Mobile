@@ -9,6 +9,7 @@ import RegistroJugadorClub from '../RegistrarJugadorByCLub/[id]';
 import defaultUserMenIcon from '../../../assets/img/Default_Imagen_Men.webp'
 import defaultUserWomenIcon from '../../../assets/img/Default_Imagen_Women.webp'
 import PerfilJugadorModal from '../perfil/[id]';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaJugadoresClub = () => {
@@ -59,9 +60,18 @@ const ListaJugadoresClub = () => {
         ? defaultUserMenIcon
         : defaultUserWomenIcon;
     };
+
+    const handleVolver = () => {
+      router.back();
+    };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Lista de Jugadores</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleVolver} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#143E42" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Lista de Jugadores</Text>
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAssignJugador}>
         <Text style={styles.addButtonText}>Agregar Jugador</Text>
       </TouchableOpacity>

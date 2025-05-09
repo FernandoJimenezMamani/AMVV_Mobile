@@ -33,7 +33,6 @@ const PerfilArbitroModal = ({ isOpen, onClose, id }) => {
         const arbitroRes = await axios.get(`${API_BASE_URL}/arbitro/get_arbitroById/${id}`);
         setArbitro(arbitroRes.data);
       } catch (err) {
-        console.error('Error al obtener árbitro:', err);
         setArbitro(null);
       }
   
@@ -42,7 +41,6 @@ const PerfilArbitroModal = ({ isOpen, onClose, id }) => {
         const totalRes = await axios.get(`${API_BASE_URL}/arbitro/matchesTotal/${id}`);
         setTotalPartidos(totalRes.data?.total_partidos_arbitrados ?? 0);
       } catch (err) {
-        console.warn('No tiene partidos arbitrados (404 esperado)');
         setTotalPartidos(0);
       }
   
@@ -51,7 +49,6 @@ const PerfilArbitroModal = ({ isOpen, onClose, id }) => {
         const campRes = await axios.get(`${API_BASE_URL}/arbitro/campeonatos/${id}`);
         setCampeonatos(Array.isArray(campRes.data) ? campRes.data : []);
       } catch (err) {
-        console.warn('No tiene campeonatos registrados (404 esperado)');
         setCampeonatos([]);
       }
   

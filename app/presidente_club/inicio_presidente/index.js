@@ -3,9 +3,10 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } fr
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { SessionProvider, useSession } from '../../../context/SessionProvider';
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-import Club_defecto from '../../../assets/img/Club_defecto.png'; // Ajusta la ruta si es diferente
+import Club_defecto from '../../../assets/img/Club_defecto.png'; 
+import FechaCampeonatoInfo from '../../../components/FechaCampeonatoInfo';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const InicioPresidente = ({  }) => {
   const [clubActual, setClubActual] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,9 +54,14 @@ const InicioPresidente = ({  }) => {
   }
 
   return (
+    <>
+    <View>
+      <FechaCampeonatoInfo />
+    </View>
     <View style={styles.container}>
       {clubActual ? (
         <View style={styles.clubInfo}>
+          
           <Text style={styles.titulo}>Mi Club</Text>
           <Image source={getImagenClub(clubActual)} style={styles.clubLogo} />
           <Text style={styles.clubNombre}>{clubActual.club_nombre}</Text>
@@ -67,6 +73,7 @@ const InicioPresidente = ({  }) => {
         <Text style={styles.noClubText}>No tienes un club activo actualmente.</Text>
       )}
     </View>
+    </>
   );
 };
 

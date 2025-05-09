@@ -10,6 +10,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import styles from '../../styles/crear_modal';
 import Toast from 'react-native-toast-message';
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
@@ -52,7 +53,7 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
         });
         setImagePreview(response.data.persona_imagen);
       } catch (error) {
-        console.error('Error al obtener los datos del delegado:', error);
+
       }
     };
     fetchDelegado();
@@ -64,7 +65,7 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
         const response = await axios.get(`${API_BASE_URL}/club/get_club`);
         setClubes(response.data);
       } catch (error) {
-        console.error('Error al obtener los clubes:', error);
+        logger.error('Error al obtener clubes:', error);
       }
     };
     fetchClubes();
@@ -90,7 +91,7 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      logger.error('Error al seleccionar la imagen:', error);
     }
   };
 
@@ -134,7 +135,6 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
           headers: { 'Content-Type': 'multipart/form-data' },
         }
       );
-      console.log('Respuesta del servidor:', response.data);
       onDelegadoUpdated();
       onClose();
       Toast.show({

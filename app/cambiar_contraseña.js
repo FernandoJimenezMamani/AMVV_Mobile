@@ -27,7 +27,6 @@ const CambiarContrasenia = ({ isOpen, onClose }) => {
       setLoading(true); // Activa estado de carga antes de enviar
       const token = await SecureStore.getItemAsync('token'); // Obtén el token de SecureStore
       if (!token) {
-        console.error('❌ Token no encontrado en SecureStore');
         Alert.alert('Error', 'No se encontró el token');
         return;
       }

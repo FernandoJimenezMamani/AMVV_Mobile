@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect ,useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
@@ -10,7 +10,8 @@ import styles from '../../styles/login';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { registerForPushNotifications } from '../../services/notification';
-
+import { Keyboard } from 'react-native';
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const InicioDeSesion = () => {
@@ -22,7 +23,7 @@ const InicioDeSesion = () => {
   const [selectedRoleId, setSelectedRoleId] = useState('');
   const { login, updateRole } = useSession(); // Usa updateRole del contexto
   const router = useRouter();
-
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
   };
@@ -30,7 +31,6 @@ const InicioDeSesion = () => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/sesion/login`, formData);
-      console.log('Respuesta del backend:', response.data);
 
       const { requireRoleSelection, roles, token, user } = response.data;
 
@@ -42,7 +42,7 @@ const InicioDeSesion = () => {
         try {
           await registerForPushNotifications();
         } catch (error) {
-          console.error('Error al registrar notificaciones push:', error);
+          logger.log('Error al registrar notificaciones push:', error);
         }
         Toast.show({
                 type: 'success',
@@ -96,16 +96,32 @@ const InicioDeSesion = () => {
         position: 'bottom'
       });
     } catch (error) {
-      console.error('Error al procesar el rol seleccionado:', error);
       Alert.alert('Error', 'Ocurrió un error al procesar su rol');
     }
   };
 
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+  
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
   return (
     <LinearGradient colors={['#64848C', '#1B2426']} style={styles.container}>
-      <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/')}>
-        <Icon name="home" size={32} color="#FFFFFF" />
-      </TouchableOpacity>
+      {!keyboardVisible && (
+        <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/')}>
+          <Icon name="home" size={32} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
+
       <View style={styles.loginBox}>
         <Image source={logo} style={styles.logo} />
         <Text style={styles.title}>INICIO DE SESIÓN</Text>

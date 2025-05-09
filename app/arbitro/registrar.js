@@ -10,6 +10,7 @@ import { AntDesign } from '@expo/vector-icons';
 import roleNames from '../../constants/roles';
 import styles from '../../styles/crear_modal';
 import Toast from 'react-native-toast-message';
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const RegistroArbitro = ({ isOpen, onClose, onArbitroCreated }) => {
@@ -52,7 +53,7 @@ const RegistroArbitro = ({ isOpen, onClose, onArbitroCreated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      logger.error('Error al seleccionar la imagen:', error);
     }
   };
 
@@ -126,15 +127,14 @@ const RegistroArbitro = ({ isOpen, onClose, onArbitroCreated }) => {
       const response = await axios.post(`${API_BASE_URL}/persona/post_persona`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('Respuesta del servidor:', response.data);
       onClose();
       onArbitroCreated();
       resetForm();
-            Toast.show({
-              type: 'success',
-              text1: 'Arbitro registrado con éxito',
-              position: 'bottom',
-            });
+      Toast.show({
+        type: 'success',
+        text1: 'Arbitro registrado con éxito',
+        position: 'bottom',
+      });
     } catch (error) {
       const msg =
         error.response?.data?.message ||

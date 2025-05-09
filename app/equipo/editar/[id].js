@@ -113,14 +113,20 @@ const EditarEquipoModal = ({ isOpen, onClose, equipoId, onEquipoUpdated }) => {
       
       onEquipoUpdated();
       onClose();
+      Toast.show({
+        type: 'success',
+        text1: 'Éxito',
+        text2: 'Equipo actualizado correctamente',
+        position: 'bottom'
+      });
     } catch (error) {
-      console.error("Error en actualización:", error);
       const mensaje = error.response?.data?.error || "Error inesperado";
       
       Toast.show({
         type: 'error',
         text1: 'Error',
         text2: mensaje,
+        position: 'bottom'
       });
     }
   };
@@ -198,6 +204,7 @@ const EditarEquipoModal = ({ isOpen, onClose, equipoId, onEquipoUpdated }) => {
             </TouchableOpacity>
           </View>
         </View>
+          <Toast />
       </View>
     </Modal>
   );

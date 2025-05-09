@@ -58,7 +58,7 @@ const ReprogramacionModal = ({ visible, onClose, simulacion, onConfirm }) => {
           {/* Botones del modal */}
           <View style={styles.modalFooter}>
             <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
-              <Text style={styles.buttonText}>Cancelar</Text>
+              <Text >Cancelar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.button, styles.confirmButton]} onPress={onConfirm}>
               <Text style={styles.buttonText}>Confirmar</Text>
@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     marginRight: 5,
+    color: 'white',
   },
 });
 

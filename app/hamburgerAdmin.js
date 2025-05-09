@@ -4,15 +4,13 @@ import { useRouter, useSegments } from 'expo-router';
 import { SessionProvider, useSession } from '../context/SessionProvider';
 import { MaterialIcons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 const HamburgerMenu = ({ children, isLoggedIn }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const router = useRouter();
   const segments = useSegments();
   const { user, token, logout } = useSession();
-
-  console.log("HamburgerMenu - isLoggedIn:", isLoggedIn, "segments:", segments);
 
   // Mostrar siempre el menú si está logueado, o si está en la página de inicio
   const shouldShowMenu = isLoggedIn || segments.length === 0 || segments[0] === 'home';
@@ -146,6 +144,7 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
                 <View style={styles.menuItem}>
                   <TouchableOpacity onPress={() => toggleSection('traspasos')}>
                   <View style={styles.mainLink}>
+                  <AntDesign name="swap" size={20} color="black"  style={{ marginRight: 8 }}/>
                   <Text style={styles.mainLinkText}>Traspasos</Text>
                   </View>
                     
@@ -158,7 +157,7 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
                             <Text style={styles.subMenuItem}>Fichar Jugadores</Text>
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => {router.push('/traspaso/solicitud_presidente'); setMenuVisible(false);}}>
-                            <Text style={styles.subMenuItem}>Ver Solicitudes P</Text>
+                            <Text style={styles.subMenuItem}>Ver Solicitudes</Text>
                           </TouchableOpacity>
                         </>
                       )}
@@ -179,16 +178,16 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
               {(hasRole('Arbitro')) && (
                 <TouchableOpacity onPress={() => {router.push('/partidos/partido_arbitro'); setMenuVisible(false);} }>
                 <View style={styles.mainLink}>
-                  <MaterialIcons name="home" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                <MaterialIcons name="sports-volleyball" size={20} color="#143E42" style={{ marginRight: 8 }}/>
                   <Text style={styles.mainLinkText}>Mis Partidos</Text>
                 </View>
   
                 </TouchableOpacity>
               )}
               {(hasRole('Jugador')) && (
-                <TouchableOpacity onPress={() => {router.push('/partidos/partido_arbitro'); setMenuVisible(false);} }>
+                <TouchableOpacity onPress={() => {router.push('/partidos/partido_jugador'); setMenuVisible(false);} }>
                 <View style={styles.mainLink}>
-                  <MaterialIcons name="home" size={20} color="#143E42" style={{ marginRight: 8 }} />
+                <MaterialIcons name="sports-volleyball" size={20} color="#143E42" style={{ marginRight: 8 }} />
                   <Text style={styles.mainLinkText}>Mis Partidos</Text>
                 </View>
   

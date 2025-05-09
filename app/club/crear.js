@@ -42,7 +42,6 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
           setImagePreview(club.club_imagen || null);
         } catch (error) {
           Alert.alert('Error', 'No se pudo cargar el club');
-          console.error('Error al obtener el club:', error);
         }
       };
       fetchClub();
@@ -78,7 +77,7 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+
     }
   };
 
@@ -102,7 +101,6 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
       });
       return true;
     } catch (error) {
-      console.error('Error al actualizar el club:', error);
       Alert.alert('Error', 'No se pudo actualizar el club');
       return false;
     }
@@ -124,7 +122,6 @@ const CrearClubModal = ({ isOpen, onClose, clubId, onClubCreated, onClubUpdated 
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     } catch (error) {
-      console.error('Error al actualizar la imagen:', error);
       Alert.alert('Error', 'No se pudo actualizar la imagen');
     }
   };

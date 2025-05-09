@@ -85,7 +85,6 @@ const PerfilClub = () => {
         text1: 'Error',
         text2: 'No se pudo cargar la información del club',
       });
-      console.error('Error al obtener el club y equipos:', error);
     } finally {
       setLoading(false);
     }
@@ -96,7 +95,7 @@ const PerfilClub = () => {
       const response = await axios.get(`${API_BASE_URL}/club/delegados/${club.club_id}`);
       setDelegadosClub(response.data);
     } catch (err) {
-      console.error("Error al obtener delegados:", err);
+
     }
   };
 

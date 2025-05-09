@@ -22,7 +22,7 @@ import defaultUserWomenIcon from '../../../assets/img/Default_Imagen_Women.webp'
 
 // Importa tus estilos
 import styles from '../../../styles/index_tabla';
-
+import PerfilJugadorModal from '../perfil/[id]';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaJugadoresEquipo = () => {
@@ -34,11 +34,11 @@ const ListaJugadoresEquipo = () => {
   const [filteredJugadores, setFilteredJugadores] = useState([]);
   const [showConfirmRegister, setShowConfirmRegister] = useState(false);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState(null);
-  const [showPerfilModal, setShowPerfilModal] = useState(false);
+  const [perfilJugadorVisible, setPerfilJugadorVisible] = useState(false);
   const [searchName, setSearchName] = useState('');
   const [equipo, setEquipo] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const [jugadorIdPerfil, setJugadorIdPerfil] = useState(null);
   useEffect(() => {
     fetchJugadores();
     if (equipoId) {
@@ -101,9 +101,9 @@ const ListaJugadoresEquipo = () => {
     setFilteredJugadores(filtered);
   };
 
-  const handleProfileClick = (personaId) => {
-    setShowPerfilModal(true);
-    setJugadorSeleccionado(personaId);
+  const handleProfileClick = (jugadorId) => {
+    setJugadorIdPerfil(jugadorId);
+    setPerfilJugadorVisible(true);
   };
 
   const handleClosePerfilModal = () => {
@@ -150,6 +150,9 @@ const ListaJugadoresEquipo = () => {
     return date.toLocaleDateString('es-ES');
   };
 
+  const handleVolver = () => {
+    router.back();
+  };
   const renderJugador = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.playerInfoContainer}>
@@ -165,15 +168,10 @@ const ListaJugadoresEquipo = () => {
             {item.nombre_club || 'Sin Club'}
           </Text>
           <Text style={styles.playerRole}>
-            Edad: {item.edad_jugador} - CI: {item.ci_persona}
-          </Text>
-          <Text style={styles.playerRole}>
-            Nacimiento: {formatDate(item.fecha_nacimiento_persona)}
+            Edad: {item.edad_jugador}
           </Text>
         </View>
-      </View>
-
-      <View style={styles.itemActions}>
+        <View style={styles.itemActions}>
         <TouchableOpacity
           style={[styles.actionButton, item.eliminado === 'S' && { opacity: 0.5 }]}
           onPress={() => {
@@ -193,6 +191,7 @@ const ListaJugadoresEquipo = () => {
           <Icon name="remove-red-eye" size={24} color="#4CAF50" />
         </TouchableOpacity>
       </View>
+      </View>     
     </View>
   );
 
@@ -208,6 +207,9 @@ const ListaJugadoresEquipo = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={handleVolver} style={styles.backButton}>
+                  <Icon name="arrow-back" size={24} color="#143E42" />
+                </TouchableOpacity>
         <Text style={styles.title}>
           {equipo ? `Añadir jugadores a ${equipo.equipo_nombre}` : "Añadir jugadores"}
         </Text>
@@ -296,55 +298,11 @@ const ListaJugadoresEquipo = () => {
         </View>
       </Modal>
 
-      {/* Modal de perfil (simplificado) */}
-      <Modal
-        visible={showPerfilModal}
-        animationType="slide"
-        onRequestClose={handleClosePerfilModal}
-      >
-        <View style={{ flex: 1, padding: 20 }}>
-          <TouchableOpacity 
-            style={{ alignSelf: 'flex-end', marginBottom: 20 }}
-            onPress={handleClosePerfilModal}
-          >
-            <Icon name="close" size={24} color="#333" />
-          </TouchableOpacity>
-          
-          <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 20 }}>
-            Perfil del Jugador
-          </Text>
-          
-          {jugadorSeleccionado && (
-            <View>
-              <Image
-                source={getImagenPerfil(jugadorSeleccionado)}
-                style={{ width: 100, height: 100, borderRadius: 50, alignSelf: 'center' }}
-              />
-              
-              <Text style={{ fontSize: 18, marginTop: 10 }}>
-                {jugadorSeleccionado.nombre_persona} {jugadorSeleccionado.apellido_persona}
-              </Text>
-              
-              <Text style={{ marginTop: 5 }}>
-                CI: {jugadorSeleccionado.ci_persona}
-              </Text>
-              
-              <Text style={{ marginTop: 5 }}>
-                Fecha de Nacimiento: {formatDate(jugadorSeleccionado.fecha_nacimiento_persona)}
-              </Text>
-              
-              <Text style={{ marginTop: 5 }}>
-                Edad: {jugadorSeleccionado.edad_jugador} años
-              </Text>
-              
-              <Text style={{ marginTop: 5 }}>
-                Club: {jugadorSeleccionado.nombre_club || 'Sin Club'}
-              </Text>
-            </View>
-          )}
-        </View>
-      </Modal>
-
+      <PerfilJugadorModal
+        isOpen={perfilJugadorVisible}
+        onClose={() => setPerfilJugadorVisible(false)}
+        id={jugadorIdPerfil}
+      />
       <Toast />
     </View>
   );

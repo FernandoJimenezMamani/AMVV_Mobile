@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#fff',
       borderBottomWidth: 1,
       borderBottomColor: '#e0e0e0',
+      marginBottom: 10,
     },
     pickerWrapper: {
       width: '48%',

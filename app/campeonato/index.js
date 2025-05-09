@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Modal, ScrollView, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Modal, ScrollView, Alert,Linking  } from 'react-native';
 import axios from 'axios';
 import { useSession } from '../../context/SessionProvider';
 import { useRouter } from 'expo-router';
@@ -12,6 +12,7 @@ import estadosMapping from '../../constants/campeonato_estados';
 import rolMapping from '../../constants/roles';
 import styles from '../../styles/campeonato/index';
 import { LinearGradient } from 'expo-linear-gradient';
+import logger from '../../utils/logger';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
@@ -38,15 +39,14 @@ const Campeonatos = () => {
     const socket = new WebSocket(WEBSOCKET_URL);
 
     socket.onopen = () => {
-      console.log('WebSocket conectado');
+      logger.log('WebSocket conectado');
     };
 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Mensaje recibido:', data);
     
-        if (data.type === 'actualizacion_estados' && Array.isArray(data.cambios)) {
+        if (data.type === 'estado_campeonato_actualizado' && Array.isArray(data.cambios)) {
           fetchCampeonatos();
           setCampeonatos((prevCampeonatos) =>
             prevCampeonatos.map((campeonato) => {
@@ -56,19 +56,17 @@ const Campeonatos = () => {
           );
         }
       } catch (error) {
-        console.error('Error procesando el mensaje del WebSocket:', error);
+        logger.error('Error procesando el mensaje del WebSocket:', error);
       }
     };
 
     socket.onerror = (error) => {
-      console.error('Error en WebSocket:', error);
+      logger.error('Error en WebSocket', error);
     };
 
     socket.onclose = (event) => {
-      console.log('WebSocket desconectado. Código:', event.code);
       if (event.code !== 1000 && event.code !== 1001) {
         setTimeout(() => {
-          console.log('Reintentando conexión WebSocket...');
           connectWebSocket();
         }, 5000);
       }
@@ -83,7 +81,6 @@ const Campeonatos = () => {
       setCampeonatos(response.data);
     } catch (error) {
       Alert.alert('Error', 'No se pudieron obtener los campeonatos');
-      console.error('Error al obtener los campeonatos:', error);
     }
   };
 
@@ -95,7 +92,6 @@ const Campeonatos = () => {
       setShowFechasModal(true);
     } catch (error) {
       Alert.alert('Error', 'No se pudieron obtener las fechas del campeonato');
-      console.error('Error obteniendo fechas:', error);
     }
   };
 
@@ -114,19 +110,13 @@ const Campeonatos = () => {
       const { uri } = await downloadResumable.downloadAsync();
       
       // 3. Abrir el PDF con una aplicación compatible
-      const canOpen = await Linking.canOpenURL(uri);
-      if (canOpen) {
-        await Linking.openURL(uri);
-      } else {
-        // Si no se puede abrir directamente, compartir el archivo
-        await Sharing.shareAsync(uri, {
-          mimeType: 'application/pdf',
-          dialogTitle: 'Partidos del Campeonato',
-          UTI: 'com.adobe.pdf',
-        });
-      }
+      await Sharing.shareAsync(uri, {
+        mimeType: 'application/pdf',
+        dialogTitle: 'Partidos del Campeonato',
+        UTI: 'com.adobe.pdf',
+      });
+      
     } catch (error) {
-      console.error('Error generando PDF:', error);
       Alert.alert('Error', 'No se pudo generar el PDF');
     }
   };
@@ -138,7 +128,6 @@ const Campeonatos = () => {
       setCampeonatos(campeonatos.filter(camp => camp.id !== selectedCampeonatoId));
     } catch (error) {
       Alert.alert('Error', 'No se pudo eliminar el campeonato');
-      console.error("Error al eliminar el campeonato:", error);
     } finally {
       setShowConfirmModal(false);
       setSelectedCampeonatoId(null);

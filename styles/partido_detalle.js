@@ -324,14 +324,16 @@ const styles = StyleSheet.create({
   },
  // Agrega estos estilos:
 planillaButton: {
-  backgroundColor: '#4CAF50', // Verde más apropiado para documentos
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 10,
-  paddingHorizontal: 15,
-  borderRadius: 8,
-  marginHorizontal: 5,
-  justifyContent: 'center',
+  backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+    textAlign: 'center',
+    justifyContent: 'center',
+    marginTop:20,
 },
 planillaButtonText: {
   color: 'white',

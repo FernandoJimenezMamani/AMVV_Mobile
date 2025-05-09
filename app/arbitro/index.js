@@ -21,6 +21,7 @@ import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
 import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import PerfilArbitroModal from './perfil/[id]';
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaArbitro = () => {
@@ -95,7 +96,7 @@ const ListaArbitro = () => {
       setShowConfirm(false);
       setArbitroToDelete(null);
     } catch (error) {
-      console.error('Error al eliminar el árbitro:', error);
+      logger.error('Error al eliminar el árbitro:', err);
     }
   };
 
@@ -104,7 +105,7 @@ const ListaArbitro = () => {
       await axios.put(`${API_BASE_URL}/persona/activatePersona/${id}`);
       fetchArbitros();
     } catch (error) {
-      console.error('Error al activar el árbitro:', error);
+      logger.error('Error al activar el árbitro:', error);
     }
   };
 

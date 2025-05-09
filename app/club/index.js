@@ -12,6 +12,7 @@ import rolMapping from '../../constants/roles';
 import { Picker } from '@react-native-picker/picker';
 import Club_defecto from '../../assets/img/Club_defecto.png';
 import Toast from 'react-native-toast-message';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaClubes = () => {
@@ -39,7 +40,6 @@ const ListaClubes = () => {
       setClubes(response.data);
       setError(null);
     } catch (error) {
-      console.error('Error al obtener los clubes:', error);
       setError('No se pudieron cargar los clubes');
       Alert.alert('Error', 'No se pudieron cargar los clubes');
     } finally {
@@ -140,6 +140,10 @@ const ListaClubes = () => {
     router.push(`/club/perfil/${clubId}`);
   };
 
+  const handleVolver = () => {
+    router.back();
+  };
+
   const getImagenClub = (imagen) => imagen ? { uri: imagen } : Club_defecto;
   if (loading) {
     return (
@@ -162,7 +166,12 @@ const ListaClubes = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Lista de Clubes</Text>
+       <View style={styles.header}>
+        <TouchableOpacity onPress={handleVolver} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#143E42" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Lista de Clubes</Text>
+       </View>  
       
       {hasRole(rolMapping.PresidenteAsociacion) && (
         <TouchableOpacity 
@@ -173,17 +182,19 @@ const ListaClubes = () => {
           <Text style={styles.addButtonText}>+1 club</Text>
         </TouchableOpacity>
       )}
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={filterState}
-          onValueChange={(value) => setFilterState(value)}
-          style={styles.picker}
-        >
-          <Picker.Item label="No filtrar" value="No filtrar" />
-          <Picker.Item label="Activo" value="Activo" />
-          <Picker.Item label="Inactivo" value="Inactivo" />
-        </Picker>
-      </View>
+      {user && (
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={filterState}
+            onValueChange={(value) => setFilterState(value)}
+            style={styles.picker}
+          >
+            <Picker.Item label="No filtrar" value="No filtrar" />
+            <Picker.Item label="Activo" value="Activo" />
+            <Picker.Item label="Inactivo" value="Inactivo" />
+          </Picker>
+        </View>
+      )}
 
       {clubes.length === 0 && !loading ? (
         <Text style={styles.emptyText}>No hay clubes registrados</Text>
@@ -194,7 +205,6 @@ const ListaClubes = () => {
               source={getImagenClub(club.club_imagen)} 
               style={styles.clubImage} 
               defaultSource={require('../../assets/img/Default_Imagen_Club.webp')}
-              onError={() => console.log('Error cargando imagen del club')}
             />
             <View style={styles.clubInfo}>
               <Text style={styles.clubName} numberOfLines={1}>{club.nombre}</Text>

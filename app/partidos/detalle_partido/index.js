@@ -25,6 +25,10 @@ import ConfirmModal from '../../../components/confirm_modal';
 import ReprogramacionModal from '../../../components/reprogramacion_modal';
 import PulseDot from '../../../components/PulseDot';
 import Club_defecto from '../../../assets/img/Club_defecto.png';
+import Toast from 'react-native-toast-message';
+import ModalPlanilla from '../../../components/ModalPlanilla';
+import logger from '../../../utils/logger';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
 const { width } = Dimensions.get('window');
@@ -51,15 +55,17 @@ const PartidoDetalle = () => {
   const [showPerfilModal, setShowPerfilModal] = useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
-
+  const [showPlanilla, setShowPlanilla] = useState(false);
+  const [planillaUrl, setPlanillaUrl] = useState('');
+  
   // Función para obtener datos del partido
   const fetchPartido = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/partidos/get_partido_completo/${partidoId}`);
       setPartido(response.data);
+      setPlanillaUrl(response.data.partido_image); 
     } catch (error) {
       Alert.alert("Error", "Error al obtener los detalles del partido");
-      console.error("Error al obtener los detalles del partido:", error);
     }
   };
 
@@ -70,7 +76,6 @@ const PartidoDetalle = () => {
       setArbitros(response.data);
     } catch (error) {
       Alert.alert("Error", "Error al obtener los árbitros del partido");
-      console.error("Error al obtener los árbitros del partido:", error);
     }
   };
 
@@ -81,7 +86,6 @@ const PartidoDetalle = () => {
       setResultadoPartido(response.data);
     } catch (error) {
       Alert.alert("Error", "Error al obtener los resultados del partido");
-      console.error("Error al obtener los resultados:", error);
     }
   };
 
@@ -92,7 +96,6 @@ const PartidoDetalle = () => {
       setGanadorPartido(response.data);
     } catch (error) {
       Alert.alert("Error", "Error al obtener el ganador del partido");
-      console.error("Error al obtener el ganador:", error);
     }
   };
 
@@ -117,7 +120,7 @@ const PartidoDetalle = () => {
           );
           setJugadoresLocal(response.data);
         } catch (error) {
-          console.error("Error al obtener los jugadores del equipo local:", error);
+          logger.error('Error al obtener los jugadores del equipo local:', error);
         }
       };
 
@@ -128,7 +131,7 @@ const PartidoDetalle = () => {
           );
           setJugadoresVisitante(response.data);
         } catch (error) {
-          console.error("Error al obtener los jugadores del equipo visitante:", error);
+          logger.error('Error al obtener los jugadores del equipo visitante:', error);
         }
       };
 
@@ -156,32 +159,30 @@ const PartidoDetalle = () => {
     const ws = new WebSocket(WEBSOCKET_URL);
   
     ws.onopen = () => {
-      console.log('✅ WebSocket abierto para actualizaciones de partido');
+      logger.log('WebSocket conectado');
     };
   
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'actualizacion_resultado') {
-          console.log('📡 Actualización de partido recibida por WebSocket');
           fetchPartido();
           fetchResultados();
           fetchGanador();
         }
       } catch (error) {
-        console.error('❌ Error procesando el mensaje WebSocket:', error);
+        logger.error('Error procesando el mensaje del WebSocket:', error);
       }
     };
   
     ws.onerror = (error) => {
-      console.error('⚠️ Error en la conexión WebSocket:', error);
+      logger.error('Error en WebSocket', error);
     };
   
     ws.onclose = () => {
-      console.log('🔴 WebSocket cerrado para actualizaciones de partido');
+      logger.error('Error en WebSocket', error);
     };
   
-    // Cierra la conexión WebSocket cuando el componente se desmonta
     return () => {
       ws.close();
     };
@@ -238,7 +239,6 @@ const PartidoDetalle = () => {
       setIsReprogramacionModalOpen(true);
     } catch (error) {
       Alert.alert("Error", "Error al simular la reprogramación.");
-      console.error("Error en la simulación de reprogramación:", error);
     }
   };
   const handleOpenConfirmModal = () => {
@@ -254,7 +254,11 @@ const PartidoDetalle = () => {
         arbitrosAsignados: simulacionReprogramacion.arbitrosAsignados,
       });
 
-      Alert.alert("Éxito", "Partido reprogramado exitosamente.");
+      Toast.show({
+        type: 'success',
+        text1: 'Reprogramación confirmada con éxito',
+        position: 'bottom',
+      });
       setIsConfirmModalOpen(false);
       setSimulacionReprogramacion(null);
       setPartido(prev => ({
@@ -264,7 +268,6 @@ const PartidoDetalle = () => {
       }));
     } catch (error) {
       Alert.alert("Error", "Error al confirmar la reprogramación.");
-      console.error("Error en la confirmación de reprogramación:", error);
     }
   };
 
@@ -296,7 +299,6 @@ const PartidoDetalle = () => {
   const handleViewOnMap = () => {
    
     if (!partido?.lugar_latitud || !partido?.lugar_longitud) {
-      console.log("Datos del partido:", partido);
       Alert.alert(
         "Ubicación no disponible",
         "Este partido no tiene coordenadas geográficas registradas"
@@ -320,6 +322,11 @@ const PartidoDetalle = () => {
       </View>
     );
   }
+
+  const handleTeamClick = (equipoId) => {
+    router.push(`/equipo/perfil/${equipoId}`);
+  };
+
  const getImagenClub = (imagen) => imagen ? { uri: imagen } : Club_defecto;
   return (
     <ScrollView style={styles.container}>
@@ -348,6 +355,7 @@ const PartidoDetalle = () => {
           </TouchableOpacity>
         </View>
       </View>
+     
 
       {/* Botones de acción */}
       <View style={styles.buttonContainer}>
@@ -379,6 +387,16 @@ const PartidoDetalle = () => {
               </TouchableOpacity>
             </>
         )}
+
+         {partido?.partido_image && (
+            <TouchableOpacity
+              style={styles.planillaButton}
+              onPress={() => setShowPlanilla(true)}
+            >
+              <Text style={styles.buttonText}>Ver Planilla</Text>
+              <Icon name="image" size={20} color="white" />
+            </TouchableOpacity>
+      )}
       </View>
 
       {/* Estado del partido */}
@@ -400,23 +418,23 @@ const PartidoDetalle = () => {
 
         {/* Equipos */}
         <View style={styles.teamsContainer}>
-          <View style={styles.teamContainer}>
-            <Image
-              source={ getImagenClub(partido.equipo_local_imagen) }
-              style={styles.teamLogo}
-            />
-            <Text style={styles.teamName}>{partido.equipo_local_nombre}</Text>
-          </View>
+        <TouchableOpacity style={styles.teamContainer} onPress={() => handleTeamClick(partido.equipo_local_id)}>
+          <Image
+            source={getImagenClub(partido.equipo_local_imagen)}
+            style={styles.teamLogo}
+          />
+          <Text style={styles.teamName}>{partido.equipo_local_nombre}</Text>
+        </TouchableOpacity>
 
-          <Text style={styles.vsText}>VS</Text>
+        <Text style={styles.vsText}>VS</Text>
 
-          <View style={styles.teamContainer}>
-            <Image
-              source={getImagenClub(partido.equipo_visitante_imagen)}
-              style={styles.teamLogo}
-            />
-            <Text style={styles.teamName}>{partido.equipo_visitante_nombre}</Text>
-          </View>
+        <TouchableOpacity style={styles.teamContainer} onPress={() => handleTeamClick(partido.equipo_visitante_id)}>
+          <Image
+            source={getImagenClub(partido.equipo_visitante_imagen)}
+            style={styles.teamLogo}
+          />
+          <Text style={styles.teamName}>{partido.equipo_visitante_nombre}</Text>
+        </TouchableOpacity>
         </View>
 
         {/* Resultados */}
@@ -572,10 +590,17 @@ const PartidoDetalle = () => {
       />
 
       <PerfilArbitroModal
-        visible={showPerfilModal}
+        isOpen={showPerfilModal}
         onClose={() => setShowPerfilModal(false)}
-        arbitroId={selectedPersonaId}
+        id={selectedPersonaId}
       />
+
+      <ModalPlanilla
+        visible={showPlanilla}
+        onClose={() => setShowPlanilla(false)}
+        imageUrl={planillaUrl}
+      />
+
     </ScrollView>
   );
 };

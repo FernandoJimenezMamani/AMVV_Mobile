@@ -36,7 +36,6 @@ const CrearCategoriaModal = ({ isOpen, onClose, categoriaId, onCategoriaCreated,
           });
         } catch (error) {
           Alert.alert('Error', 'No se pudo cargar la categoría');
-          console.error('Error al obtener la categoría:', error);
         }
       };
       fetchCategoria();
@@ -102,7 +101,6 @@ const CrearCategoriaModal = ({ isOpen, onClose, categoriaId, onCategoriaCreated,
       onClose();
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error al guardar la categoría');
-      console.error('Error al guardar la categoría:', error);
     }
   };
 

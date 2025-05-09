@@ -101,11 +101,6 @@ const PerfilEquipo = () => {
         const equipoRes = await axios.get(`${API_BASE_URL}/equipo/get_equipo/${id}`);
         setEquipo(equipoRes.data);
         
-        // Obtener jugadores
-        if (campeonatoId) {
-          const jugadoresRes = await axios.get(`${API_BASE_URL}/jugador/get_jugadores_equipo/${id}/${campeonatoId}`);
-          setJugadores(jugadoresRes.data);
-        }
         
         // Obtener categoría del equipo
         if (equipoRes.data?.equipo_id && campeonatoId) {
@@ -133,6 +128,25 @@ const PerfilEquipo = () => {
     
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    const fetchJugadores = async () => {
+      if (!selectedCampeonato || !id) return;
+      try {
+        const jugadoresRes = await axios.get(`${API_BASE_URL}/jugador/get_jugadores_equipo/${id}/${selectedCampeonato}`);
+        setJugadores(jugadoresRes.data);
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'No se pudieron cargar los jugadores',
+        });
+      }
+    };
+  
+    fetchJugadores();
+  }, [selectedCampeonato, id]);
+  
 
   // Obtener partidos cuando cambia la pestaña o el campeonato
   useEffect(() => {

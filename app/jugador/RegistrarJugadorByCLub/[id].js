@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Modal, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Modal, 
+  Alert,ActivityIndicator,ScrollView} from 'react-native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams } from 'expo-router';
 import styles from '../../../styles/crear_modal';
 import roleNames from '../../../constants/roles'; // Importa los roles
-
+import Toast from 'react-native-toast-message';
+import { AntDesign } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_id }) => {
@@ -18,13 +21,14 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
     direccion: '',
     correo: '',
     genero: 'V',
-    roles: [roleNames.Jugador], // Agrega roles aquí
+    roles: [roleNames.Jugador],
+    club_jugador_id: club_jugador_id,
   });
   const [errors, setErrors] = useState({});
   const [image, setImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     (async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -79,11 +83,15 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
     }
 
     const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
-    data.append('club_jugador_id', club_jugador_id);
-    data.append('roles', JSON.stringify(formData.roles)); // Agrega roles como JSON
+    data.append('nombre', formData.nombre);
+    data.append('apellido', formData.apellido);
+    data.append('fecha_nacimiento', formData.fecha_nacimiento);
+    data.append('ci', formData.ci);
+    data.append('direccion', formData.direccion);
+    data.append('correo', formData.correo);
+    data.append('genero', formData.genero);
+    data.append('roles', JSON.stringify(formData.roles));
+    data.append('club_jugador_id', formData.club_jugador_id); // Agrega roles como JSON
 
     if (image) {
       data.append('image', {
@@ -92,17 +100,26 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
         type: 'image/jpeg',
       });
     }
-
+    setLoading(true);
     try {
       await axios.post(`${API_BASE_URL}/persona/post_persona`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      Alert.alert('Éxito', 'Jugador registrado con éxito');
       onClose();
       onJugadorCreated();
+      Toast.show({
+        type: 'success',
+        text1: 'Jugador registrado con éxito',
+        position: 'bottom',
+      });
     } catch (error) {
-      Alert.alert('Error', 'No se pudo registrar el jugador');
-      console.error('Error al registrar jugador:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error al registrar jugador',
+        position: 'bottom',
+      });
+    }finally {
+      setLoading(false); 
     }
   };
 
@@ -111,10 +128,13 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Registrar Jugador</Text>
+          <ScrollView >
+            <View style={{ alignItems: 'center', marginBottom: 15 }}>
           <TouchableOpacity onPress={handleImagePick} style={styles.fileButton}>
-            <Text style={styles.fileButtonText}>Seleccionar Foto</Text>
+          <AntDesign name="camera" size={24} color="black" />
           </TouchableOpacity>
           {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
+          </View>
           <TextInput placeholder="Nombre" style={styles.input} value={formData.nombre} onChangeText={(text) => handleChange('nombre', text)} />
           <TextInput placeholder="Apellido" style={styles.input} value={formData.apellido} onChangeText={(text) => handleChange('apellido', text)} />
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
@@ -133,6 +153,10 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
           <TextInput placeholder="Cédula de Identidad" style={styles.input} value={formData.ci} onChangeText={(text) => handleChange('ci', text)} />
           <TextInput placeholder="Dirección" style={styles.input} value={formData.direccion} onChangeText={(text) => handleChange('direccion', text)} />
           <TextInput placeholder="Correo" style={styles.input} value={formData.correo} onChangeText={(text) => handleChange('correo', text)} keyboardType="email-address" />
+          <Picker selectedValue={formData.genero} style={styles.picker} onValueChange={(itemValue) => handleChange('genero', itemValue)}>
+            <Picker.Item label="Varón" value="V" />
+            <Picker.Item label="Dama" value="D" />
+          </Picker>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.buttonText}>Cancelar</Text>
@@ -141,8 +165,16 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
               <Text style={styles.buttonText}>Registrar</Text>
             </TouchableOpacity>
           </View>
+          </ScrollView>
         </View>
+        <Toast />
       </View>
+      <Modal visible={loading} transparent animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 10 }}>Registrando arbitro...</Text>
+        </View>
+      </Modal>
     </Modal>
   );
 };

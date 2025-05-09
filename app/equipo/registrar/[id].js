@@ -81,22 +81,21 @@ const RegistroEquipo = ({ isOpen, onClose, onTeamCreated, clubId }) => {
     try {
       setIsLoading(true);
       const response = await axios.post(`${API_BASE_URL}/equipo/post_equipo`, formData);
-      
+
+      onTeamCreated();
+      onClose();
       Toast.show({
         type: 'success',
         text1: 'Éxito',
         text2: 'Equipo registrado correctamente',
         position: 'bottom'
       });
-      
-      onTeamCreated();
-      onClose();
     } catch (error) {
-      console.error('Registration error:', error);
+      const mensaje = error.response?.data?.error || "Error inesperado";
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: error.response?.data?.message || 'Error al registrar el equipo',
+        text2: mensaje,
         position: 'bottom'
       });
     } finally {
@@ -143,7 +142,7 @@ const RegistroEquipo = ({ isOpen, onClose, onTeamCreated, clubId }) => {
                 {categorias.map(categoria => (
                   <Picker.Item
                     key={`cat-${categoria.id}`}
-                    label={`${categoria.nombre} - ${categoria.genero === 'M' ? 'Masculino' : 'Femenino'}`}
+                    label={`${categoria.nombre} - ${categoria.genero === 'D' ? 'Masculino' : 'Femenino'}`}
                     value={categoria.id}
                   />
                 ))}
@@ -175,6 +174,7 @@ const RegistroEquipo = ({ isOpen, onClose, onTeamCreated, clubId }) => {
             </View>
           </ScrollView>
         </View>
+        <Toast />
       </View>
     </Modal>
   );

@@ -1,10 +1,15 @@
 import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import defaultBackground from '../../../assets/logo.png'; // Ajusta la ruta si es necesario
-
+import FechaCampeonatoInfo from '../../../components/FechaCampeonatoInfo';
 const VistaDefault = () => {
   return (
+    <>
+    <View>
+      <FechaCampeonatoInfo />
+    </View>
     <View style={styles.container}>
+       
       <View style={styles.imageContainer}>
         <Image 
           source={defaultBackground} 
@@ -13,6 +18,7 @@ const VistaDefault = () => {
         />
       </View>
     </View>
+    </>
   );
 };
 

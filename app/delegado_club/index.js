@@ -20,6 +20,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import defaultUserMenIcon from '../../assets/img/Default_Imagen_Men.webp'
 import defaultUserWomenIcon from '../../assets/img/Default_Imagen_Women.webp'
 import PerfilDelegadoModal from './perfil/[id]';
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaDelegadoClub = () => {
@@ -51,7 +52,6 @@ const ListaDelegadoClub = () => {
       setPresidentes(res.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error al obtener las personas:', error);
       setLoading(false);
     }
   };
@@ -109,7 +109,7 @@ const ListaDelegadoClub = () => {
       setShowConfirm(false);
       setPersonaToDelete(null);
     } catch (error) {
-      console.error('Error al eliminar la persona:', error);
+      logger.error('Error al eliminar la persona:', error);
     }
   };
 
@@ -118,7 +118,7 @@ const ListaDelegadoClub = () => {
       await axios.put(`${API_BASE_URL}/persona/activatePersona/${id}`);
       fetchPresidentes();
     } catch (error) {
-      console.error('Error al activar usuario:', error);
+      logger.error('Error al activar usuario:', error);
     }
   };
 

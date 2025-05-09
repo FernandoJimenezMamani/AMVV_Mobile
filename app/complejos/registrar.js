@@ -42,7 +42,6 @@ const RegistroComplejoModal = ({ visible, onClose, onComplejoAdded }) => {
             onClose();
             onComplejoAdded();
         } catch (err) {
-            console.error('Error al crear el lugar:', err);
             setError('Error al crear el Lugar');
             Toast.show({
                 type: 'error',

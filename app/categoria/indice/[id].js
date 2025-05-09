@@ -21,7 +21,6 @@ const ListaCategorias = () => {
         setCategorias(response.data);
       } catch (error) {
         Alert.alert('Error', 'No se pudieron obtener las categorías');
-        console.error('Error al obtener las categorías:', error);
       }
     };
 
@@ -39,7 +38,6 @@ const ListaCategorias = () => {
   };
 
   const handleCategorySelect = (categoriaId) => {
-      console.log(campeonatoId, categoriaId);
     router.push({
       pathname: "/partidos/indice_partidos",
       params: { 

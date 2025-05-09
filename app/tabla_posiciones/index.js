@@ -41,7 +41,7 @@ const TablaPosiciones = () => {
         setCategoriaAscenso(true);
       }
     } catch (error) {
-      console.error('Error al obtener el título:', error);
+      logger.error('Error al obtener el título:', error);
     }
   }, [campeonatoId, categoriaId]);
 
@@ -53,7 +53,6 @@ const TablaPosiciones = () => {
       await fetchMarcadoresVivos();
       setLoading(false);
     } catch (error) {
-      console.error('Error al obtener los equipos:', error);
       setLoading(false);
     }
   }, [campeonatoId, categoriaId, categoriaAscenso]);
@@ -70,7 +69,7 @@ const TablaPosiciones = () => {
       });
       setMarcadoresVivos(formateado);
     } catch (error) {
-      console.error("Error al obtener marcadores vivos:", error);
+      logger.error('Error al obtener marcadores vivos:', error);
     }
   }, [campeonatoId, categoriaId]);
 
@@ -80,7 +79,7 @@ const TablaPosiciones = () => {
   useEffect(() => {
     if (!campeonatoId || !categoriaId) return;
     const ws = new WebSocket(WEBSOCKET_URL);
-    ws.onopen = () => console.log('✅ Conexión WebSocket establecida');
+    ws.onopen = () => logger.log('WebSocket conectado');
     ws.onmessage = (event) => {
       try {
         const mensaje = JSON.parse(event.data);
@@ -88,11 +87,11 @@ const TablaPosiciones = () => {
           fetchEquipos();
         }
       } catch (error) {
-        console.error('❌ Error al procesar mensaje WebSocket:', error);
+        logger.error('Error procesando el mensaje del WebSocket:', error);
       }
     };
-    ws.onerror = (error) => console.error('⚠️ Error WebSocket:', error);
-    ws.onclose = () => console.log('🔴 WebSocket cerrado');
+    ws.onerror = (error) => logger.error('Error en WebSocket', error);
+    ws.onclose = () => logger.error('Socket cerrado', error);
     return () => ws.close();
   }, [campeonatoId, categoriaId, fetchEquipos]);
 

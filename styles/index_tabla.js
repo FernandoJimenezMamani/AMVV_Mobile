@@ -369,6 +369,22 @@ solicitudesSubtitle: {
   marginBottom: 12,
   fontWeight: '500',
 },
+ header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#f5f5f5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#143E42',
+  },
 });
 
 export default styles;

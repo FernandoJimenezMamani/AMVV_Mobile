@@ -124,7 +124,6 @@ const ListaLugar = () => {
       fetchComplejos();
     } catch (error) {
       toast.error('Error al activar el complejo');
-      console.error('Error al activar complejo:', error);
     }
   };
   return (

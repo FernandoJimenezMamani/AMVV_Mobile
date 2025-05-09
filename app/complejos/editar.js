@@ -34,7 +34,6 @@ const EditarComplejo = ({ isOpen, onClose, complejoId, onComplejoUpdated }) => {
           user_id: 2,
         });
       } catch (error) {
-        console.error('Error al obtener el complejo:', error);
         Toast.show({
           type: 'error',
           text1: 'Error al obtener los datos del complejo',
@@ -91,7 +90,6 @@ const EditarComplejo = ({ isOpen, onClose, complejoId, onComplejoUpdated }) => {
         autoHide: true,
       });
     } catch (error) {
-      console.error('Error al actualizar el complejo:', error);
       Toast.show({
         type: 'error',
         text1: 'Error al actualizar el complejo',

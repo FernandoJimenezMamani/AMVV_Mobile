@@ -397,11 +397,7 @@ const SubmitResultados = () => {
           position: 'bottom',
         });
       } else {
-        Toast.show({
-          type: 'error',
-          text1: result.message || result.mensaje || 'Error al actualizar',
-          position: 'bottom',
-        });
+        Alert.alert("Error", result.message || result.mensaje || 'Error al actualizar');
       }
     } catch (error) {
       Alert.alert("Error", "No se pudo conectar con el servidor");
