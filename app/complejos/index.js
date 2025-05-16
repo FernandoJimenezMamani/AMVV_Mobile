@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Switch, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Modal} from 'react-native';
+import { View, Text, Switch, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform } from 'react-native';
 import axios from 'axios';
 import { MaterialIcons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -85,24 +85,35 @@ const ListaLugar = () => {
   };
 
   const handleViewOnMap = (complejo) => {
-    if (!complejo.latitud || !complejo.longitud) {
+  if (!complejo.latitud || !complejo.longitud) {
+    Toast.show({
+      type: 'error',
+      text1: 'Ubicación no disponible',
+      text2: 'Este complejo no tiene coordenadas geográficas',
+      position: 'bottom'
+    });
+    return;
+  }
+
+  const lat = parseFloat(complejo.latitud);
+  const lng = parseFloat(complejo.longitud);
+  const label = encodeURIComponent(complejo.nombre || 'Ubicación');
+
+  const url = Platform.select({
+    ios: `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(${label})`
+  });
+
+    Linking.openURL(url).catch(err =>
       Toast.show({
         type: 'error',
-        text1: 'Ubicación no disponible',
-        text2: 'Este complejo no tiene coordenadas geográficas',
+        text1: 'No se pudo abrir el mapa',
+        text2: err.message,
         position: 'bottom'
-      });
-      return;
-    }
-    
-    setSelectedLocation({
-      latitude: parseFloat(complejo.latitud),
-      longitude: parseFloat(complejo.longitud),
-      title: complejo.nombre,
-      description: complejo.direccion
-    });
-    setIsMapModalOpen(true);
+      })
+    );
   };
+
 
   const handleEditPress = (complejoId) => {
     setSelectedComplejoId(complejoId);
@@ -130,12 +141,7 @@ const ListaLugar = () => {
     <View style={styles.container}>
 
         <Text style={styles.title}>Complejos Deportivos</Text>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => setShowFormModal(true)}
-        >
-          <Text style={styles.addButtonText}>+ Nuevo Complejo</Text>
-        </TouchableOpacity>
+
 
       <View style={styles.pickerContainer}>
         <Picker
@@ -164,13 +170,6 @@ const ListaLugar = () => {
                   onPress={() => handleViewOnMap(complejo)}
                 >
                   <MaterialIcons name="map" size={24} color="#579FA6" />
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => handleEditPress(complejo.id)}
-                >
-                  <MaterialIcons name="edit" size={24} color="#9DAC42" />
                 </TouchableOpacity>
                 
                 <Switch

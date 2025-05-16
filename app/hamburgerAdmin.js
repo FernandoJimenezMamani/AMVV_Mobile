@@ -193,6 +193,33 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
   
                 </TouchableOpacity>
               )}
+              {hasRole('PresidenteClub') && (
+                <View style={styles.menuItem}>
+                  <TouchableOpacity onPress={() => toggleSection('historial')}>
+                  <View style={styles.mainLink}>
+                    <MaterialIcons name="group" size={20} color="#143E42" style={{ marginRight: 8 }}/>
+                    <Text style={styles.mainLinkText}>Historial</Text>
+                  </View>
+                  </TouchableOpacity>
+                  {expandedSection === 'historial' && (
+                    <View style={styles.subMenu}>
+                      <TouchableOpacity onPress={() => {router.push({
+                          pathname: '/pago/HistorialPagosInscripcionClub',
+                          params: { presidenteId: user.id }
+                        });
+                        ; setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Inscripción</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => {router.push({
+                          pathname: '/pago/HistorialPagosTraspasoClub',
+                          params: { presidenteId: user.id }
+                        }); setMenuVisible(false);}}>
+                        <Text style={styles.subMenuItem}>Traspasos</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+              </View>
+              )}
               <TouchableOpacity 
                 style={styles.accountButton} 
                 onPress={handleProfileClick}

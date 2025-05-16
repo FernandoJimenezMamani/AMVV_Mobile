@@ -9,7 +9,7 @@ import {
   Modal,
   Alert,
   Dimensions,
-  Button
+  Button,Linking, Platform 
 } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -176,11 +176,16 @@ const PartidoDetalle = () => {
     };
   
     ws.onerror = (error) => {
-      logger.error('Error en WebSocket', error);
+      try {
+        logger.error("Error en WebSocket:", error);
+        // No uses throw ni console.error aquí
+      } catch (e) {
+        logger.error("Error interno manejando onerror WebSocket:", e);
+      }
     };
   
     ws.onclose = () => {
-      logger.error('Error en WebSocket', error);
+      logger.log('Conexión WebSocket cerrada');
     };
   
     return () => {
@@ -296,24 +301,30 @@ const PartidoDetalle = () => {
     if (!user || user.rol.nombre !== rolMapping.Arbitro) return false;
     return arbitros.some(arbitro => arbitro.arbitro_id === user.id);
   };
+
   const handleViewOnMap = () => {
-   
-    if (!partido?.lugar_latitud || !partido?.lugar_longitud) {
-      Alert.alert(
-        "Ubicación no disponible",
-        "Este partido no tiene coordenadas geográficas registradas"
-      );
-      return;
-    }
-    
-    setSelectedLocation({
-      latitude: parseFloat(partido.lugar_latitud),
-      longitude: parseFloat(partido.lugar_longitud),
-      title: partido.lugar_nombre,
-      description: `Partido: ${partido.equipo_local_nombre} vs ${partido.equipo_visitante_nombre}`
-    });
-    setIsMapModalOpen(true);
+  if (!partido?.lugar_latitud || !partido?.lugar_longitud) {
+    Alert.alert(
+      "Ubicación no disponible",
+      "Este partido no tiene coordenadas geográficas registradas"
+    );
+    return;
+  }
+
+  const lat = parseFloat(partido.lugar_latitud);
+  const lng = parseFloat(partido.lugar_longitud);
+  const label = encodeURIComponent(partido.lugar_nombre || 'Lugar');
+
+  const url = Platform.select({
+    ios: `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(${label})`
+  });
+
+    Linking.openURL(url).catch(err =>
+      Alert.alert('Error', 'No se pudo abrir la aplicación de mapas.')
+    );
   };
+
   // Renderizado condicional
   if (!partido) {
     return (

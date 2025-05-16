@@ -18,6 +18,7 @@ import defaultUserWomen from '../../../assets/img/Default_Imagen_Women.webp';
 import styles from '../../../styles/detalle_traspaso';
 import ConfirmModal from '../../../components/confirm_modal';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Toast from 'react-native-toast-message';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 

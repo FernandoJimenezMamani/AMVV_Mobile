@@ -14,9 +14,9 @@ const MapModal = ({ isOpen, onClose, onLocationSelect, latitud, longitud }) => {
     const [lastRequestTime, setLastRequestTime] = useState(0);
     const mapRef = useRef(null);
 
-    // Nominatim API configuration
-    const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/reverse';
-    const REQUEST_DELAY = 1000; // 1 second delay between requests
+   const NOMINATIM_URL = process.env.EXPO_PUBLIC_NOMINATIM_URL;
+   const REQUEST_DELAY = parseInt(process.env.EXPO_PUBLIC_REQUEST_DELAY || '1000');
+
 
     useEffect(() => {
         if (latitud && longitud) {

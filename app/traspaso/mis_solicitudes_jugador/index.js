@@ -77,7 +77,7 @@ const MisSolicitudesJugador = () => {
   const fetchClubes = async () => {
     try {
       const requestBody = {
-        jugador_id: jugador.jugador_id,
+        jugador_id: jugador.id,
         campeonatoId: selectedCampeonato
       };
       
@@ -144,7 +144,7 @@ const MisSolicitudesJugador = () => {
   };
 
   const handleDetailsClick = (traspasoId) => {
-    router.push(`/traspasos/detalleSolicitante/${traspasoId}`);
+    router.push(`/traspaso/detalle_solicitante/${traspasoId}`);
   };
 
   const handleDeleteClick = (traspasoId) => {
