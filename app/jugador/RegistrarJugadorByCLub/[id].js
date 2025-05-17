@@ -75,6 +75,7 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
     }
   };
 
+  
   const handleSubmit = async () => {
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
@@ -107,6 +108,20 @@ const RegistroJugadorClub = ({ isOpen, onClose, onJugadorCreated, club_jugador_i
       });
       onClose();
       onJugadorCreated();
+      setFormData({
+        nombre: '', 
+        apellido: '',
+        fecha_nacimiento: '',
+        ci: '',
+        direccion: '',
+        correo: '',
+        genero: 'V',
+        roles: [roleNames.Jugador],
+        club_jugador_id: club_jugador_id,
+      });
+      setImage(null);
+      setErrors({});
+      setSelectedDate(new Date());
       Toast.show({
         type: 'success',
         text1: 'Jugador registrado con éxito',

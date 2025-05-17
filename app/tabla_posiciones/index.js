@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import estadosMapping from '../../constants/campeonato_estados';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Club_defecto from '../../assets/img/Club_defecto.png';
-
+import logger from '../../utils/logger';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const WEBSOCKET_URL = process.env.EXPO_PUBLIC_WEBSOCKET_URL;
 
@@ -91,7 +91,7 @@ const TablaPosiciones = () => {
       }
     };
     ws.onerror = (error) => logger.error('Error en WebSocket', error);
-    ws.onclose = () => logger.error('Socket cerrado', error);
+    ws.onclose = () => logger.log('Socket cerrado');
     return () => ws.close();
   }, [campeonatoId, categoriaId, fetchEquipos]);
 

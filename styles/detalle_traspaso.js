@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#143E42',
     textShadowColor: 'rgba(0, 0, 0, 0.2)',

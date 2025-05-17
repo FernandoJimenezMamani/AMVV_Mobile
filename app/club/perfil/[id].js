@@ -227,30 +227,31 @@ const PerfilClub = () => {
 
       {/* Lista de equipos */}
       <View style={styles.teamsContainer}>
-        {filteredTeams.length > 0 ? (
-          filteredTeams.map((team) => (
-            <TouchableOpacity 
-              key={team.equipo_id} 
-              style={styles.teamCard}
-              onPress={() => handleTeamClick(team.equipo_id)}
-            >
-              <View style={styles.teamInfo}>
-                <Text style={styles.teamName}>{team.equipo_nombre}</Text>
-                <Text style={styles.teamDetail}>Categoría: {team.categoria_nombre}</Text>
-                <Text style={styles.teamDetail}>Género: {getGeneroTexto(team.categoria_genero)}</Text>
-              </View>
-              
-              {/* Botón de edición (condicional) */}
-              {true && ( // Reemplaza con tu lógica de permisos
-                <TouchableOpacity 
-                  style={styles.editButton}
-                  onPress={() => handleEditTeam(team.equipo_id)}
-                >
-                  <MaterialIcons name="edit" size={20} color="white" />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ))
+       {filteredTeams.filter(team => team && team.equipo_id && team.equipo_nombre).length > 0 ? (
+          filteredTeams
+            .filter(team => team && team.equipo_id && team.equipo_nombre)
+            .map((team) => (
+              <TouchableOpacity 
+                key={team.equipo_id} 
+                style={styles.teamCard}
+                onPress={() => handleTeamClick(team.equipo_id)}
+              >
+                <View style={styles.teamInfo}>
+                  <Text style={styles.teamName}>{team.equipo_nombre}</Text>
+                  <Text style={styles.teamDetail}>Categoría: {team.categoria_nombre}</Text>
+                  <Text style={styles.teamDetail}>Género: {getGeneroTexto(team.categoria_genero)}</Text>
+                </View>
+
+                {true && (
+                  <TouchableOpacity 
+                    style={styles.editButton}
+                    onPress={() => handleEditTeam(team.equipo_id)}
+                  >
+                    <MaterialIcons name="edit" size={20} color="white" />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            ))
         ) : (
           <Text style={styles.noTeamsText}>No hay equipos disponibles para este club.</Text>
         )}

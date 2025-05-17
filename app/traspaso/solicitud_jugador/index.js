@@ -105,6 +105,13 @@ const Indice = () => {
     (s.estado_club_origen === 'PENDIENTE' || s.estado_club_origen === 'APROBADO')
   );
 
+  const formatFechaLarga = (fechaString) => {
+    if (!fechaString) return '';
+    const [year, month, day] = fechaString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)); // mes empieza en 0
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
   if (loading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
@@ -181,9 +188,7 @@ const Indice = () => {
           <View style={styles.statusItem}>
             <Text style={styles.statusLabel}>Fecha:</Text>
             <Text style={styles.userName}>
-              {solicitud.fecha_solicitud 
-                ? new Date(solicitud.fecha_solicitud).toLocaleDateString('es-ES') 
-                : 'No especificada'}
+              {formatFechaLarga(solicitud.fecha_solicitud)}
             </Text>
           </View>
 

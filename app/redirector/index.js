@@ -19,7 +19,7 @@ export default function Redirector() {
       } else if (rol === 'PresidenteClub' || rol === 'DelegadoClub') {
         router.replace('/presidente_club/inicio_presidente');
       } else if (rol === 'Jugador') {
-        router.replace('/home/vista_defecto');
+        router.replace('/jugador/inicio_jugador');
       } else {
         router.replace('/home/vista_defecto'); // Cualquier otro rol no esperado
       }

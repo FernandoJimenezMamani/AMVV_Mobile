@@ -268,7 +268,7 @@ const MisSolicitudes = () => {
       </View>
 
       <View style={styles.filterRow}>
-        <View style={styles.pickerContainer}>
+        <View style={[styles.pickerContainer, {flex: 1.2}]}>
           <Picker
             selectedValue={filterState}
             onValueChange={(value) => setFilterState(value)}

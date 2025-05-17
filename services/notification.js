@@ -12,7 +12,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const setupNotificationListeners = (router) => {
+export const setupNotificationListeners = (router, user) => {
   Notifications.addNotificationReceivedListener(notification => {
     console.log('Notificación recibida:', notification);
   });
@@ -21,20 +21,35 @@ export const setupNotificationListeners = (router) => {
     const data = response.notification.request.content.data;
     console.log('Usuario tocó la notificación:', data);
     
-    if (data?.screen === 'detalle_jugador') {
-      router.push(`/traspaso/detalle_jugador/${data.traspasoId}`);
-    }
     switch(data?.screen){
-      case 'detalle_jugador':
-        router.push(`/traspaso/detalle_jugador/${data.traspasoId}`);
+      case 'solicitud_jugador':
+        router.push(`/traspaso/solicitud_jugador`);
         break;
-      case 'detalle_presidente':
-        router.push(`/traspaso/detalle_presidente/${data.traspasoId}`);
+      case 'solicitud_presidente':
+        router.push(`/traspaso/solicitud_presidente`);
         break;
-      case 'detalle_solicitante':
-          router.push(`/traspaso/detalle_solicitante/${data.traspasoId}`);
+      case 'mis_solicitudes_presidente':
+          router.push(`/traspaso/mis_solicitudes`);
           break;  
-    }
+      case 'mis_solicitudes_jugador':
+        router.push(`/traspaso/mis_solicitudes_jugador`);
+        break;
+      case 'historial_pago_presidente':
+        router.push({
+        pathname: '/pago/HistorialPagosTraspasoClub',
+        params: { presidenteId: user.id }
+      });
+        break;
+      case 'historial_pago_presidente_inscripcion':
+        router.push({
+        pathname: '/pago/HistorialPagosInscripcionClub',
+        params: { presidenteId: user.id }
+      });
+        break;
+      case 'home':
+        router.push(`/`);
+        break;
+    } 
   });
 };
 

@@ -10,11 +10,11 @@ function RootLayout() {
   const { token } = useSession();
   const isLoggedIn = !!token;
   const router = useRouter(); 
-
+  const { user } = useSession();
   useEffect(() => {
     if (isLoggedIn) {
       registerForPushNotifications();
-      setupNotificationListeners(router); 
+      setupNotificationListeners(router,user); 
     }
   }, [isLoggedIn, router]);
 
