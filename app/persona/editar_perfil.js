@@ -51,7 +51,7 @@ const EditarPerfilPersona = ({ isOpen, onClose, personaId, onPersonaUpdated }) =
         });
         setImagePreview(response.data.persona_imagen);
       } catch (error) {
-        console.error('Error al obtener los datos de la persona:', error);
+        console.log('Error al obtener los datos de la persona:', error);
       }
     };
     fetchPersona();
@@ -63,7 +63,7 @@ const EditarPerfilPersona = ({ isOpen, onClose, personaId, onPersonaUpdated }) =
         const response = await axios.get(`${API_BASE_URL}/club/get_club`);
         setClubes(response.data);
       } catch (error) {
-        console.error('Error al obtener los clubes:', error);
+        console.log('Error al obtener los clubes:', error);
       }
     };
     fetchClubes();
@@ -89,7 +89,7 @@ const EditarPerfilPersona = ({ isOpen, onClose, personaId, onPersonaUpdated }) =
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      console.log('Error al seleccionar la imagen:', error);
     }
   };
 
@@ -157,7 +157,7 @@ const EditarPerfilPersona = ({ isOpen, onClose, personaId, onPersonaUpdated }) =
       onPersonaUpdated();
       onClose();
     } catch (error) {
-      console.error(
+      console.log(
         'Error al actualizar la persona:',
         error.response ? error.response.data : error.message
       );

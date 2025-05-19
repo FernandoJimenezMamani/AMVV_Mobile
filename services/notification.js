@@ -86,7 +86,7 @@ export const registerForPushNotifications = async () => {
     
     return token;
   } catch (error) {
-    console.error('Error al obtener token push:', error);
+    console.log('Error al obtener token push:', error);
     return null;
   }
 };
@@ -113,21 +113,21 @@ const registerPushToken = async (token) => {
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
-      console.error('Respuesta no JSON recibida:', text);
+      console.log('Respuesta no JSON recibida:', text);
       throw new Error(`Respuesta inesperada: ${text.substring(0, 100)}...`);
     }
 
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('Error al registrar token:', data);
+      console.log('Error al registrar token:', data);
       throw new Error(data.message || 'Error al registrar token push');
     }
 
     console.log('Token registrado exitosamente en backend:', data);
     return data;
   } catch (error) {
-    console.error('Error en registerPushToken:', error);
+    console.log('Error en registerPushToken:', error);
     throw error;
   }
 };

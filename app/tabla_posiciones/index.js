@@ -41,7 +41,7 @@ const TablaPosiciones = () => {
         setCategoriaAscenso(true);
       }
     } catch (error) {
-      logger.error('Error al obtener el título:', error);
+      logger.log('Error al obtener el título:', error);
     }
   }, [campeonatoId, categoriaId]);
 
@@ -69,7 +69,7 @@ const TablaPosiciones = () => {
       });
       setMarcadoresVivos(formateado);
     } catch (error) {
-      logger.error('Error al obtener marcadores vivos:', error);
+      logger.log('Error al obtener marcadores vivos:', error);
     }
   }, [campeonatoId, categoriaId]);
 
@@ -87,10 +87,10 @@ const TablaPosiciones = () => {
           fetchEquipos();
         }
       } catch (error) {
-        logger.error('Error procesando el mensaje del WebSocket:', error);
+        logger.log('Error procesando el mensaje del WebSocket:', error);
       }
     };
-    ws.onerror = (error) => logger.error('Error en WebSocket', error);
+    ws.onerror = (error) => logger.log('Error en WebSocket', error);
     ws.onclose = () => logger.log('Socket cerrado');
     return () => ws.close();
   }, [campeonatoId, categoriaId, fetchEquipos]);

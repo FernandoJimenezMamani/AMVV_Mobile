@@ -39,7 +39,7 @@ const RegistroDelegado = ({ isOpen, onClose, onDelegadoCreated }) => {
         const response = await axios.get(`${API_BASE_URL}/club/get_club`);
         setClubesDelegado(response.data);
       } catch (error) {
-        console.error('Error al obtener los clubes para delegado:', error);
+        console.log('Error al obtener los clubes para delegado:', error);
       }
     };
     fetchClubesDelegado();
@@ -68,7 +68,7 @@ const RegistroDelegado = ({ isOpen, onClose, onDelegadoCreated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      console.log('Error al seleccionar la imagen:', error);
     }
   };
 

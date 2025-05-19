@@ -27,7 +27,6 @@ const PartidosList = () => {
         setPartidos(response.data);
       } catch (error) {
         Alert.alert('Error', 'No se pudieron obtener los partidos');
-        console.error('Error al obtener los partidos:', error);
       }
     };
 
@@ -44,7 +43,7 @@ const PartidosList = () => {
           const response = await axios.get(`${API_BASE_URL}/partidos/ganador/${partido.id}`);
           resultadosTemp[partido.id] = response.data;
         } catch (error) {
-          console.error(`Error al obtener resultado para partido ${partido.id}:`, error);
+          console.log(`Error al obtener resultado para partido ${partido.id}:`, error);
         }
       }
 
@@ -62,7 +61,7 @@ const PartidosList = () => {
         const response = await axios.get(`${API_BASE_URL}/partidos/verificar-fixture/${campeonatoId}/${categoriaId}`);
         setFixtureCompleto(response.data);
       } catch (error) {
-        console.error("Error al verificar fixture:", error);
+        console.log("Error al verificar fixture:", error);
       }
     };
   

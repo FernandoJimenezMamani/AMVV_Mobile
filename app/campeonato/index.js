@@ -56,12 +56,12 @@ const Campeonatos = () => {
           );
         }
       } catch (error) {
-        logger.error('Error procesando el mensaje del WebSocket:', error);
+        logger.log('Error procesando el mensaje del WebSocket:', error);
       }
     };
 
     socket.onerror = (error) => {
-      logger.error('Error en WebSocket', error);
+      logger.log('Error en WebSocket', error);
     };
 
     socket.onclose = (event) => {

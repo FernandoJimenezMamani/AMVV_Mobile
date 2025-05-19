@@ -67,7 +67,6 @@ const MisSolicitudes = () => {
       }
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los campeonatos');
-      console.error('Error fetching campeonatos:', error);
     }
   };
 
@@ -96,7 +95,6 @@ const MisSolicitudes = () => {
       setPresidente(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los PRESIDENTES');
-      console.error('Error al obtener los PRESIDENTES:', error);
     }
   };
 
@@ -118,7 +116,6 @@ const MisSolicitudes = () => {
       setJugadores(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los jugadores');
-      console.error('Error al obtener los jugadores:', error);
     }
   };
 
@@ -189,7 +186,6 @@ const MisSolicitudes = () => {
       fetchJugadores();
     } catch (error) {
       Alert.alert('Error', 'Error al solicitar el traspaso');
-      console.error('Error al crear el traspaso:', error);
       setShowConfirmTraspaso(false);
       setJugadorToFichar(null);
     }
@@ -218,7 +214,6 @@ const MisSolicitudes = () => {
       fetchJugadores();
     } catch (error) {
       Alert.alert('Error', 'Error al eliminar la solicitud');
-      console.error('Error al eliminar la solicitud:', error);
     }
   };
 

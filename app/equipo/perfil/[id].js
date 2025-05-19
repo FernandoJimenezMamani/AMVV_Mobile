@@ -120,7 +120,6 @@ const PerfilEquipo = () => {
           text1: 'Error',
           text2: 'No se pudieron cargar los datos del equipo',
         });
-        console.error('Error al obtener datos:', error);
       } finally {
         setLoading(false);
       }
@@ -162,7 +161,6 @@ const PerfilEquipo = () => {
           text1: 'Error',
           text2: 'No se pudieron cargar los partidos',
         });
-        console.error('Error al obtener partidos:', error);
       }
     };
     
@@ -311,7 +309,6 @@ const PerfilEquipo = () => {
         text1: 'Error',
         text2: 'No se pudo eliminar el jugador',
       });
-      console.error("Error al eliminar el jugador:", error);
     } finally {
       setShowConfirmModal(false);
       setSelectedJugadorId(null);

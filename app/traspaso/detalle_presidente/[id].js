@@ -61,7 +61,6 @@ const DetalleTraspasoPresidente = () => {
       setPresidente(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los datos del presidente');
-      console.error('Error al obtener los datos del presidente:', error);
     }
   };
 
@@ -93,7 +92,6 @@ const DetalleTraspasoPresidente = () => {
       setSolicitud(data);
       setError(null);
     } catch (error) {
-      console.error('Error completo:', error);
       setError(error.message || 'Error al obtener los detalles');
       Alert.alert(
         'Error',

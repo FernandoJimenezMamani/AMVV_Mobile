@@ -43,7 +43,6 @@ const RegistroEquipo = ({ isOpen, onClose, onTeamCreated, clubId }) => {
         const categoriasResponse = await axios.get(`${API_BASE_URL}/categoria/get_categoria`);
         setCategorias(categoriasResponse.data || []);
       } catch (error) {
-        console.error('Error fetching data:', error);
         Toast.show({
           type: 'error',
           text1: 'Error',

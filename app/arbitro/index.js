@@ -96,7 +96,7 @@ const ListaArbitro = () => {
       setShowConfirm(false);
       setArbitroToDelete(null);
     } catch (error) {
-      logger.error('Error al eliminar el árbitro:', err);
+      logger.log('Error al eliminar el árbitro:', err);
     }
   };
 
@@ -105,7 +105,7 @@ const ListaArbitro = () => {
       await axios.put(`${API_BASE_URL}/persona/activatePersona/${id}`);
       fetchArbitros();
     } catch (error) {
-      logger.error('Error al activar el árbitro:', error);
+      logger.log('Error al activar el árbitro:', error);
     }
   };
 

@@ -89,7 +89,6 @@ const ListaPresidenteClub = () => {
       fetchPresidentes();
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar el estado del presidente');
-      console.error('Error al actualizar el estado:', error);
     }
   };
 

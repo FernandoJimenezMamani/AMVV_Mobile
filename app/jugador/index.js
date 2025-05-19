@@ -43,7 +43,6 @@ const ListaJugadores = () => {
         setError('No se encontraron datos de jugadores.');
       }
     } catch (error) {
-      console.error('Error al obtener jugadores:', error);
       setError('No se pudo obtener la lista de jugadores. Verifica la conexión o el endpoint.');
     } finally {
       setLoading(false);
@@ -127,7 +126,6 @@ const ListaJugadores = () => {
       fetchJugadores();
     } catch (error) {
       Alert.alert('Error', 'No se pudo desactivar el jugador');
-      console.error('Error al desactivar el jugador:', error);
     } finally {
       setShowConfirm(false);
       setJugadorToDelete(null);
@@ -142,7 +140,6 @@ const ListaJugadores = () => {
       fetchJugadores();
     } catch (error) {
       Alert.alert('Error', 'No se pudo activar el jugador');
-      console.error('Error al activar el jugador:', error);
     }
   };
 

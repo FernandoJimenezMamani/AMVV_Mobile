@@ -69,7 +69,7 @@ const MapModal = ({ isOpen, onClose, onLocationSelect, latitud, longitud }) => {
                 setAddress('Dirección no disponible');
             }
         } catch (error) {
-            console.error('Error al obtener la dirección:', error);
+            console.log('Error al obtener la dirección:', error);
             if (error.response && error.response.status === 403) {
                 setAddress('Error: Demasiadas solicitudes. Por favor espere.');
             } else {

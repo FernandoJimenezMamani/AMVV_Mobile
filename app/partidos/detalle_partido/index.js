@@ -120,7 +120,7 @@ const PartidoDetalle = () => {
           );
           setJugadoresLocal(response.data);
         } catch (error) {
-          logger.error('Error al obtener los jugadores del equipo local:', error);
+          logger.log('Error al obtener los jugadores del equipo local:', error);
         }
       };
 
@@ -131,7 +131,7 @@ const PartidoDetalle = () => {
           );
           setJugadoresVisitante(response.data);
         } catch (error) {
-          logger.error('Error al obtener los jugadores del equipo visitante:', error);
+          logger.log('Error al obtener los jugadores del equipo visitante:', error);
         }
       };
 
@@ -171,16 +171,15 @@ const PartidoDetalle = () => {
           fetchGanador();
         }
       } catch (error) {
-        logger.error('Error procesando el mensaje del WebSocket:', error);
+        logger.log('Error procesando el mensaje del WebSocket:', error);
       }
     };
   
     ws.onerror = (error) => {
       try {
-        logger.error("Error en WebSocket:", error);
-        // No uses throw ni console.error aquí
+        logger.log("Error en WebSocket:", error);
       } catch (e) {
-        logger.error("Error interno manejando onerror WebSocket:", e);
+        logger.log("Error interno manejando onerror WebSocket:", e);
       }
     };
   

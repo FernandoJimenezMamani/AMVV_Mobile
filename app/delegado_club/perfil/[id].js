@@ -35,7 +35,7 @@ const PerfilDelegadoModal = ({ isOpen, onClose, delegadoId }) => {
       const res = await axios.get(`${API_BASE_URL}/presidente_club/get_delegadoById/${id}`);
       setDelegado(res.data);
     } catch (error) {
-      console.error('Error al obtener datos personales del delegado:', error);
+      console.log('Error al obtener datos personales del delegado:', error);
       setDelegado(null);
     } finally {
       setLoading(false); // solo termina el loading general cuando ya cargó algo útil

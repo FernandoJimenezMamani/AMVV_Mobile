@@ -46,7 +46,6 @@ const PerfilJugadorModal = ({ isOpen, onClose, id }) => {
         setJugador(jugadorResponse.data);
         setClubes(clubesResponse.data || []);
       } catch (err) {
-        console.error('Error:', err);
         setError('Error al cargar datos');
         setClubes([]);
       } finally {

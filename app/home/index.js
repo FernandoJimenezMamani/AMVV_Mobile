@@ -65,7 +65,7 @@ const Home = () => {
         const campeonatoActivo = campeonatosRes.data.find(camp => camp.estado !== 3);
         setSelectedCampeonato(campeonatoActivo?.id || campeonatosRes.data[0]?.id);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.log('Error fetching data:', error);
       }
     };
 
@@ -94,13 +94,12 @@ const Home = () => {
               const res = await axios.get(`${API_BASE_URL}/partidos/ganador/${partido.id}`);
               resultadosTemp[partido.id] = res.data;
             } catch (error) {
-              console.error(`Error fetching resultado para partido ${partido.id}:`, error);
+              console.log(`Error fetching resultado para partido ${partido.id}:`, error);
             }
           }
           setResultados(resultadosTemp);
         }
       } catch (error) {
-        console.error('Error fetching partidos:', error);
         Alert.alert('Error', 'No se pudieron cargar los partidos. Intenta nuevamente.');
       }
     };

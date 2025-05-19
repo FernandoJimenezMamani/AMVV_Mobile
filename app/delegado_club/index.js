@@ -109,7 +109,7 @@ const ListaDelegadoClub = () => {
       setShowConfirm(false);
       setPersonaToDelete(null);
     } catch (error) {
-      logger.error('Error al eliminar la persona:', error);
+      logger.log('Error al eliminar la persona:', error);
     }
   };
 
@@ -118,7 +118,7 @@ const ListaDelegadoClub = () => {
       await axios.put(`${API_BASE_URL}/persona/activatePersona/${id}`);
       fetchPresidentes();
     } catch (error) {
-      logger.error('Error al activar usuario:', error);
+      logger.log('Error al activar usuario:', error);
     }
   };
 

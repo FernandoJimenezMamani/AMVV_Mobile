@@ -37,7 +37,7 @@ const RegistroPresidente = ({ isOpen, onClose, onPresidenteCreated }) => {
         const response = await axios.get(`${API_BASE_URL}/club/get_clubWithoutPresident`);
         setClubesPresidente(response.data);
       } catch (error) {
-        console.error('Error al obtener los clubes para presidente:', error);
+        console.log('Error al obtener los clubes para presidente:', error);
       }
     };
     fetchClubesPresidente();
@@ -66,7 +66,7 @@ const RegistroPresidente = ({ isOpen, onClose, onPresidenteCreated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      console.log('Error al seleccionar la imagen:', error);
     }
   };
 

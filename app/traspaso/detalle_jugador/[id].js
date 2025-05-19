@@ -66,7 +66,6 @@ const DetalleTraspaso = () => {
       setSolicitud(data);
       setError(null);
     } catch (error) {
-      console.error('Error completo:', error);
       setError(error.message || 'Error al obtener los detalles');
       Alert.alert(
         'Error',

@@ -69,7 +69,6 @@ const MisSolicitudesJugador = () => {
       const response = await axios.get(`${API_BASE_URL}/jugador/get_jugadorById/${userId}`);
       setJugador(response.data);
     } catch (error) {
-      console.error('Error al obtener jugador:', error);
       throw error;
     }
   };
@@ -90,7 +89,6 @@ const MisSolicitudesJugador = () => {
       setClubes(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los clubes');
-      console.error('Error al obtener clubes:', error);
     }
   };
 
@@ -102,7 +100,6 @@ const MisSolicitudesJugador = () => {
       const activo = response.data.find(c => c.estado !== 3);
       setSelectedCampeonato(activo ? activo.id : response.data[0]?.id);
     } catch (error) {
-      console.error('Error al obtener campeonatos:', error);
       throw error;
     }
   };
@@ -158,7 +155,6 @@ const MisSolicitudesJugador = () => {
       await fetchClubes();
     } catch (error) {
       Alert.alert('Error', 'Error al eliminar la solicitud');
-      console.error('Error al eliminar:', error);
     } finally {
       setShowConfirmDelete(false);
       setRequestToDelete(null);

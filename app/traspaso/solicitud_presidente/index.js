@@ -27,7 +27,6 @@ const IndiceSolicitudesPresidente = () => {
         setSelectedCampeonato(activo ? activo.id : response.data[0]?.id);
       } catch (error) {
         Alert.alert('Error', 'Error al obtener campeonatos');
-        console.error(error);
       } finally {
         setLoading(false);
       }

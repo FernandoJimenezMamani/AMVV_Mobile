@@ -66,7 +66,6 @@ const ListaJugadoresEquipo = () => {
         text1: 'Error',
         text2: 'No se pudieron cargar los jugadores',
       });
-      console.error('Error al obtener los jugadores:', error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +81,6 @@ const ListaJugadoresEquipo = () => {
         text1: 'Error',
         text2: 'No se pudo cargar la información del equipo',
       });
-      console.error('Error al obtener el equipo:', error);
     }
   };
 
@@ -134,7 +132,6 @@ const ListaJugadoresEquipo = () => {
         text1: 'Error',
         text2: 'No se pudo añadir el jugador al equipo',
       });
-      console.error('Error al registrar el jugador:', error);
     }
   };
 

@@ -28,7 +28,6 @@ const Indice = () => {
         setSelectedCampeonato(campeonatoActivo ? campeonatoActivo.id : response.data[0]?.id);
       } catch (error) {
         Alert.alert('Error', 'Error al obtener los campeonatos');
-        console.error('Error fetching campeonatos:', error);
       } finally {
         setLoading(false);
       }
@@ -55,7 +54,6 @@ const Indice = () => {
         setSolicitudes(response.data);
       } catch (error) {
         Alert.alert('Error', 'Error al obtener las solicitudes de traspaso');
-        console.error('Error al obtener solicitudes:', error);
       } finally {
         setLoading(false);
       }

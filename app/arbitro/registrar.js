@@ -53,7 +53,7 @@ const RegistroArbitro = ({ isOpen, onClose, onArbitroCreated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      logger.error('Error al seleccionar la imagen:', error);
+      logger.log('Error al seleccionar la imagen:', error);
     }
   };
 

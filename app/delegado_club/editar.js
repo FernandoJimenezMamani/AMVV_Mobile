@@ -65,7 +65,7 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
         const response = await axios.get(`${API_BASE_URL}/club/get_club`);
         setClubes(response.data);
       } catch (error) {
-        logger.error('Error al obtener clubes:', error);
+        logger.log('Error al obtener clubes:', error);
       }
     };
     fetchClubes();
@@ -91,7 +91,7 @@ const EditarDelegado = ({ isOpen, onClose, delegadoId, onDelegadoUpdated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      logger.error('Error al seleccionar la imagen:', error);
+      logger.log('Error al seleccionar la imagen:', error);
     }
   };
 

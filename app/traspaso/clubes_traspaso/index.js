@@ -49,7 +49,6 @@ const ListaClubesTraspasos = () => {
       setJugador(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los datos del jugador');
-      console.error('Error al obtener los jugadores:', error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +72,6 @@ const ListaClubesTraspasos = () => {
       setClubes(response.data.clubes || []);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los clubes');
-      console.error('Error al obtener los clubes:', error);
     } finally {
       setLoading(false);
     }

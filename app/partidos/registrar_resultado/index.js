@@ -115,7 +115,6 @@ const SubmitResultados = () => {
           setImagenPlanillaURL(resultadosData.imagenPlanilla);
         }
       } catch (error) {
-        console.error("Error al obtener datos:", error);
         Alert.alert("Error", "No se pudieron cargar los datos del partido");
       }
     };
@@ -135,7 +134,7 @@ const SubmitResultados = () => {
         const data = await response.json();
         setJugadores(data);
       } catch (error) {
-        console.error("Error al obtener jugadores:", error);
+        console.log("Error al obtener jugadores:", error);
       }
     };
 
@@ -186,7 +185,7 @@ const SubmitResultados = () => {
         setImagenPlanillaURL(croppedImage.uri);
         setCameraVisible(false);
       } catch (error) {
-        console.error("Error al tomar foto:", error);
+        console.log("Error al tomar foto:", error);
         Alert.alert("Error", "No se pudo tomar la foto");
       }
     }
@@ -218,7 +217,6 @@ const SubmitResultados = () => {
         setImagenPlanillaURL(croppedImage.uri);
       }
     } catch (error) {
-      console.error("Error al seleccionar imagen:", error);
       Alert.alert("Error", "No se pudo seleccionar la imagen");
     }
   };

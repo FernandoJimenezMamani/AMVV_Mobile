@@ -23,7 +23,6 @@ const TablaSolicitudesPresidente = ({ campeonatoId, estadoFiltro }) => {
         setSolicitudes(data);
       } catch (error) {
         Alert.alert('Error', 'Error al obtener solicitudes tipo presidente');
-        console.error('Error al obtener solicitudes tipo presidente:', error);
       }
     };
 

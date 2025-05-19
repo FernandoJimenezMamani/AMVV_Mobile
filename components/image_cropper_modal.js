@@ -41,7 +41,7 @@ const ImageCropperModal = ({ isOpen, onClose, onCropConfirm }) => {
         onCropConfirm(croppedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar o recortar la imagen:', error);
+      console.log('Error al seleccionar o recortar la imagen:', error);
     }
   };
 

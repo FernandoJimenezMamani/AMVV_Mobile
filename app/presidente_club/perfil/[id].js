@@ -41,7 +41,7 @@ const PerfilPresidenteModal = ({ isOpen, onClose, presidenteId }) => {
       const response = await axios.get(`${API_BASE_URL}/presidente_club/get_presidenteById/${id}`);
       setPresidente(response.data);
     } catch (error) {
-      console.error('Error al obtener datos del presidente:', error);
+      console.log('Error al obtener datos del presidente:', error);
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ const PerfilPresidenteModal = ({ isOpen, onClose, presidenteId }) => {
       const response = await axios.get(`${API_BASE_URL}/presidente_club/clubActual/${id}`);
       setClubActual(response.data);
     } catch (error) {
-      console.error('Error al obtener el club actual del presidente:', error);
+      console.log('Error al obtener el club actual del presidente:', error);
     }
   };
 

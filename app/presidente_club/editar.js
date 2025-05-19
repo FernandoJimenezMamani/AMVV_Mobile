@@ -51,7 +51,7 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
         });
         setImagePreview(response.data.persona_imagen);
       } catch (error) {
-        console.error('Error al obtener los datos del presidente:', error);
+        console.log('Error al obtener los datos del presidente:', error);
       }
     };
     fetchPresidente();
@@ -63,7 +63,7 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
         const response = await axios.get(`${API_BASE_URL}/club/get_club`);
         setClubes(response.data);
       } catch (error) {
-        console.error('Error al obtener los clubes:', error);
+        console.log('Error al obtener los clubes:', error);
       }
     };
     fetchClubes();
@@ -89,7 +89,7 @@ const EditarPresidente = ({ isOpen, onClose, presidenteId, onPresidenteUpdated }
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      console.log('Error al seleccionar la imagen:', error);
     }
   };
 

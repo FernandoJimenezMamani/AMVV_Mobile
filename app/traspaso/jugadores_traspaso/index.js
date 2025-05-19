@@ -65,7 +65,6 @@ const ListaJugadoresTraspaso = () => {
       setPresidente(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los jugadores');
-      console.error('Error al obtener los jugadores:', error);
     }
   };
 
@@ -88,7 +87,6 @@ const ListaJugadoresTraspaso = () => {
       setJugadores(response.data);
     } catch (error) {
       Alert.alert('Error', 'Error al obtener los jugadores');
-      console.error('Error al obtener los jugadores:', error);
     } finally {
       setLoading(false);
     }
@@ -160,7 +158,6 @@ const ListaJugadoresTraspaso = () => {
       fetchJugadores();
     } catch (error) {
       Alert.alert('Error', 'Error al solicitar el traspaso');
-      console.error('Error al crear el traspaso:', error);
       setShowConfirmTraspaso(false);
       setJugadorToFichar(null);
     }

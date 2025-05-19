@@ -45,12 +45,12 @@ const FechaCampeonatoInfo = () => {
           fetchCampeonato(); // Refrescar los datos
         }
       } catch (err) {
-       logger.error('Error procesando el mensaje del WebSocket:', err);
+       logger.log('Error procesando el mensaje del WebSocket:', err);
       }
     };
 
     socketRef.current.onerror = (err) => {
-      logger.error('Error en WebSocket', err);
+      logger.log('Error en WebSocket', err);
     };
 
     socketRef.current.onclose = () => {

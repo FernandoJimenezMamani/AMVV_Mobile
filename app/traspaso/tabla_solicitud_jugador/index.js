@@ -23,7 +23,6 @@ const TablaSolicitudesJugador = ({ campeonatoId, estadoFiltro }) => {
         setSolicitudes(data);
       } catch (error) {
         Alert.alert('Error', 'Error al obtener solicitudes tipo jugador');
-        console.error('Error al obtener solicitudes tipo jugador:', error);
       }
     };
 

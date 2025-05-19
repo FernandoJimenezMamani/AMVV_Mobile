@@ -26,7 +26,7 @@ const InicioJugador = () => {
       const response = await axios.get(`${API_BASE_URL}/jugador/clubActual/${id}`);
       setClubActual(response.data);
     } catch (error) {
-      console.error('Error al obtener el club actual del jugador:', error);
+      console.log('Error al obtener el club actual del jugador:', error);
     } finally {
       setLoading(false);
     }

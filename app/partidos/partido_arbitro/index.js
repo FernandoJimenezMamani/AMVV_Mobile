@@ -38,7 +38,7 @@ const PartidosArbitroList = () => {
         const activo = response.data.find(c => c.estado !== 3);
         setCampeonatoId(activo ? activo.id : response.data[0]?.id);
       } catch (error) {
-        console.error('Error al obtener campeonatos:', error);
+        console.log('Error al obtener campeonatos:', error);
       }
     };
     fetchCampeonatos();
@@ -52,7 +52,6 @@ const PartidosArbitroList = () => {
         setPartidos(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error al obtener los partidos:', error);
         setLoading(false);
       }
     };
@@ -69,7 +68,7 @@ const PartidosArbitroList = () => {
           const response = await axios.get(`${API_BASE_URL}/partidos/ganador/${partido.id}`);
           resultadosTemp[partido.id] = response.data;
         } catch (error) {
-          console.error(`Error al obtener resultado para partido ${partido.id}:`, error);
+          console.log(`Error al obtener resultado para partido ${partido.id}:`, error);
         }
       }
   

@@ -47,14 +47,13 @@ export const SessionProvider = ({ children }) => {
 
             console.log('Token decodificado:', decoded);
           } catch (error) {
-            console.error('Error al decodificar el token:', error);
             await logout(); // ✅ Limpiar si está corrupto
           }
         } else {
           console.log('No se encontró sesión en AsyncStorage');
         }
       } catch (error) {
-        console.error('Error al cargar la sesión:', error);
+        console.log('Error al cargar la sesión:', error);
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +74,7 @@ export const SessionProvider = ({ children }) => {
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(decoded));
     } catch (error) {
-      console.error('Error en el login o al decodificar el token:', error);
+      console.log('Error en el login o al decodificar el token:', error);
     }
   };
 
@@ -90,7 +89,7 @@ export const SessionProvider = ({ children }) => {
                 },
                 timeout: 3000 // Timeout corto para no bloquear
               }).catch(error => {
-                console.error('Error al eliminar token push (no crítico):', error);
+                console.log('Error al eliminar token push (no crítico):', error);
               });
             }
       // 1. Limpiar estados primero para que la UI responda inmediatamente
@@ -105,7 +104,7 @@ export const SessionProvider = ({ children }) => {
   
       return true;
     } catch (error) {
-      console.error('Error en logout:', error);
+      console.log('Error en logout:', error);
       return false;
     }
   };

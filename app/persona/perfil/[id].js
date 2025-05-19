@@ -43,7 +43,7 @@ const PerfilJugador = () => {
         setJugador(response.data);
       } catch (error) {
         Alert.alert('Error', 'No se pudo obtener los datos del jugador');
-        console.error('Error:', error);
+        console.log('Error:', error);
         router.back();
       } finally {
         setLoading(false);

@@ -48,7 +48,6 @@ const CrearJugadorModal = ({ isOpen, onClose, onJugadorCreated }) => {
         setClubes(response.data);
       } catch (error) {
         Alert.alert('Error', 'No se pudo obtener la lista de clubes');
-        console.error('Error al obtener los clubes:', error);
       }
     };
     fetchClubes();
@@ -74,7 +73,7 @@ const CrearJugadorModal = ({ isOpen, onClose, onJugadorCreated }) => {
         setImagePreview(manipulatedImage.uri);
       }
     } catch (error) {
-      console.error('Error al seleccionar la imagen:', error);
+      console.log('Error al seleccionar la imagen:', error);
     }
   };
 
