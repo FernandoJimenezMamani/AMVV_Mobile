@@ -10,6 +10,7 @@ import RegistroComplejoModal from './registrar';
 import EditarComplejoModal from './editar';
 import MapaDetalleModal from '../../components/mapa_detalle';
 import { Picker } from '@react-native-picker/picker';
+import { useCampeonato } from '../../context/CampeonatoContext';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaLugar = () => {
@@ -24,6 +25,12 @@ const ListaLugar = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [filterState, setFilterState] = useState('No filtrar');
   const [filteredComplejos, setFilteredComplejos] = useState([]);
+  const { campeonatoEnCurso, campeonatoEnTransaccion, fetchCampeonatos } = useCampeonato();
+
+  useEffect(() => {
+    fetchCampeonatos(); // siempre se actualiza al entrar
+  }, []);
+
   useEffect(() => {
     fetchComplejos();
   }, []);
@@ -171,7 +178,7 @@ const ListaLugar = () => {
                 >
                   <MaterialIcons name="map" size={24} color="#579FA6" />
                 </TouchableOpacity>
-                
+                {(campeonatoEnTransaccion && 
                 <Switch
                     value={complejo.eliminado !== 'S'}
                     onValueChange={() =>
@@ -180,6 +187,7 @@ const ListaLugar = () => {
                         : handleDeleteClick(complejo.id)
                     }
                   />
+                  )}
               </View>
             </View>
           ))

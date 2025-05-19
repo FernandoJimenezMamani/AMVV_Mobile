@@ -5,18 +5,19 @@ import Toast from 'react-native-toast-message';
 import { useEffect } from 'react';
 import { registerForPushNotifications, setupNotificationListeners } from '../services/notification';
 import { useRouter  } from 'expo-router';
+import { CampeonatoProvider } from '../context/CampeonatoContext';
 
 function RootLayout() {
-  const { token } = useSession();
+  const { token,user } = useSession();
   const isLoggedIn = !!token;
   const router = useRouter(); 
-  const { user } = useSession();
+
   useEffect(() => {
     if (isLoggedIn) {
       registerForPushNotifications();
       setupNotificationListeners(router,user); 
     }
-  }, [isLoggedIn, router]);
+  }, [isLoggedIn, router, user]);
 
   return (
     <HamburgerMenu isLoggedIn={isLoggedIn}>
@@ -27,8 +28,10 @@ function RootLayout() {
 export default function AppLayout() {
   return (
     <SessionProvider>
-      <RootLayout />
-      <Toast />
+      <CampeonatoProvider> 
+        <RootLayout />
+        <Toast />
+      </CampeonatoProvider>
     </SessionProvider>
   );
 }

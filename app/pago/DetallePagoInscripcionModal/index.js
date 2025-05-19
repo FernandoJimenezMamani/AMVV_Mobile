@@ -51,6 +51,7 @@ const DetallePagoInscripcionModal = ({ isOpen, onClose, equipoId, campeonatoId }
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>Detalle del Pago</Text>
+
           {loading ? (
             <View style={modalStyles.loadingBox}>
               <ActivityIndicator size="large" color="#4CAF50" />
@@ -59,33 +60,39 @@ const DetallePagoInscripcionModal = ({ isOpen, onClose, equipoId, campeonatoId }
           ) : pagos.length === 0 ? (
             <Text style={styles.emptyText}>No hay pagos registrados para este equipo.</Text>
           ) : (
-            <ScrollView>
+            <ScrollView contentContainerStyle={modalStyles.scrollContent}>
               {pagos.map((pago, idx) => (
                 <View key={idx} style={modalStyles.card}>
-                  <Text style={modalStyles.label}>Equipo:</Text>
-                  <Text style={modalStyles.value}>{pago.equipo}</Text>
-
-                  <Text style={modalStyles.label}>Categoría:</Text>
-                  <Text style={modalStyles.value}>{pago.categoria}</Text>
-
-                  <Text style={modalStyles.label}>Género:</Text>
-                  <Text style={modalStyles.value}>
-                    {pago.genero === 'V' ? 'Varones' : 'Damas'}
-                  </Text>
-
-                  <Text style={modalStyles.label}>Monto:</Text>
-                  <Text style={modalStyles.value}>{pago.monto} Bs</Text>
-
-                  <Text style={modalStyles.label}>Fecha:</Text>
-                  <Text style={modalStyles.value}>{formatFecha(pago.fecha)}</Text>
-
-                  <Text style={modalStyles.label}>Referencia:</Text>
-                  <Text style={modalStyles.value}>{pago.referencia}</Text>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Equipo:</Text>
+                    <Text style={modalStyles.value}>{pago.equipo}</Text>
+                  </View>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Categoría:</Text>
+                    <Text style={modalStyles.value}>{pago.categoria}</Text>
+                  </View>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Género:</Text>
+                    <Text style={modalStyles.value}>{pago.genero === 'V' ? 'Varones' : 'Damas'}</Text>
+                  </View>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Monto:</Text>
+                    <Text style={modalStyles.value}>{pago.monto} Bs</Text>
+                  </View>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Fecha:</Text>
+                    <Text style={modalStyles.value}>{formatFecha(pago.fecha)}</Text>
+                  </View>
+                  <View style={modalStyles.row}>
+                    <Text style={modalStyles.label}>Referencia:</Text>
+                    <Text style={modalStyles.value}>{pago.referencia}</Text>
+                  </View>
                 </View>
               ))}
             </ScrollView>
           )}
-          <View style={styles.buttonContainer}>
+
+          <View style={modalStyles.buttonBox}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.buttonText}>Cerrar</Text>
             </TouchableOpacity>
@@ -99,23 +106,39 @@ const DetallePagoInscripcionModal = ({ isOpen, onClose, equipoId, campeonatoId }
 const modalStyles = StyleSheet.create({
   card: {
     marginBottom: 15,
-    padding: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
+    borderRadius: 10,
     backgroundColor: '#fff',
+  },
+  row: {
+    marginBottom: 8,
   },
   label: {
     fontWeight: 'bold',
-    marginBottom: 2,
+    fontSize: 15,
   },
   value: {
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#333',
+    marginTop: 2,
   },
   loadingBox: {
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 30,
+  },
+  scrollContent: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  buttonBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+    marginBottom: 10,
   },
 });
 

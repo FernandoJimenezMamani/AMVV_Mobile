@@ -6,6 +6,7 @@ import ConfirmModal from '../../components/confirm_modal';
 import CrearCategoriaModal from './crear'; // Importa el modal unificado
 import styles from '../../styles/index_tabla';
 import { Picker } from '@react-native-picker/picker';
+import { useCampeonato } from '../../context/CampeonatoContext';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaCategorias = () => {
@@ -16,6 +17,12 @@ const ListaCategorias = () => {
   const [selectedCategoriaId, setSelectedCategoriaId] = useState(null); // ID de la categoría seleccionada para editar
   const [filterState, setFilterState] = useState('No filtrar');
   const [filteredCategorias, setFilteredCategorias] = useState([]);
+  const { campeonatoEnCurso, campeonatoEnTransaccion, fetchCampeonatos } = useCampeonato();
+
+  useEffect(() => {
+    fetchCampeonatos(); // siempre se actualiza al entrar
+  }, []);
+  
   useEffect(() => {
     fetchCategorias();
   }, []);
@@ -110,10 +117,11 @@ const ListaCategorias = () => {
 
       </View>
       <View style={styles.actions}>
+        {(campeonatoEnTransaccion &&
         <TouchableOpacity onPress={() => handleEditClick(item.id)}>
           <MaterialIcons name="edit" size={24} color="#9DAC42" />
         </TouchableOpacity>
-        
+         )} 
         {/*
         <Switch
           value={item.eliminado !== 'S'}

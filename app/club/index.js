@@ -13,6 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 import Club_defecto from '../../assets/img/Club_defecto.png';
 import Toast from 'react-native-toast-message';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useCampeonato } from '../../context/CampeonatoContext';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaClubes = () => {
@@ -28,6 +29,11 @@ const ListaClubes = () => {
   const { user } = useSession();
   const [filterState, setFilterState] = useState('No filtrar');
   const [filteredClubes, setFilteredClubes] = useState([]);
+  const { campeonatoEnCurso, campeonatoEnTransaccion,fetchCampeonatos } = useCampeonato();
+
+  useEffect(() => {
+    fetchCampeonatos(); // siempre se actualiza al entrar
+  }, []);
   
   useEffect(() => {
     fetchClubes();
@@ -173,7 +179,7 @@ const ListaClubes = () => {
         <Text style={styles.title}>Lista de Clubes</Text>
        </View>  
       
-      {hasRole(rolMapping.PresidenteAsociacion) && (
+      {hasRole(rolMapping.PresidenteAsociacion) && campeonatoEnTransaccion && (
         <TouchableOpacity 
           style={styles.addButton} 
           onPress={handleRegistrarClick}
@@ -220,12 +226,14 @@ const ListaClubes = () => {
               
               {hasRole(rolMapping.PresidenteAsociacion) && (
                 <>
+                
                   <TouchableOpacity 
                     onPress={() => handleEditClick(club.id)}
                     disabled={loading}
                   >
                     <MaterialIcons name="edit" size={24} color="#9DAC42" />
                   </TouchableOpacity>
+                  {(campeonatoEnTransaccion&&
                   <Switch
                     value={club.eliminado !== 'S'}
                     onValueChange={() =>
@@ -234,6 +242,7 @@ const ListaClubes = () => {
                         : handleDeleteClick(club.id)
                     }
                   />
+                  )}
                 </>
               )}
             </View>

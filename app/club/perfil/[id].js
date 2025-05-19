@@ -26,7 +26,7 @@ import PerfilPresidenteModal from '../../presidente_club/perfil/[id]';
 import EditarEquipoModal from '../../equipo/editar/[id]';
 import RegistroEquipo from '../../equipo/registrar/[id]';
 import styles from '../../../styles/club/perfil';
-
+import { useCampeonato } from '../../../context/CampeonatoContext';
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width } = Dimensions.get('window');
 const PerfilClub = () => {
@@ -41,6 +41,12 @@ const PerfilClub = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
+  const { campeonatoEnCurso, campeonatoEnTransaccion, fetchCampeonatos } = useCampeonato();
+
+  useEffect(() => {
+    fetchCampeonatos(); // siempre se actualiza al entrar
+  }, []);
+
   useEffect(() => {
     fetchClubAndTeams();
   }, [id]);
@@ -202,11 +208,12 @@ const PerfilClub = () => {
           <MaterialIcons name="people" size={24} color="white" />
           <Text style={styles.buttonText}>Mis Jugadores</Text>
         </TouchableOpacity>
-        
+        {campeonatoEnTransaccion && (
         <TouchableOpacity style={styles.actionButton} onPress={handleCreateTeam}>
           <MaterialCommunityIcons name="volleyball" size={24} color="white" />
           <Text style={styles.buttonText}>Crear Equipo</Text>
         </TouchableOpacity>
+        )}
       </View>
 
       {/* Filtro por género */}
