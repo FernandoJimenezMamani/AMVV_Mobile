@@ -10,9 +10,12 @@ import defaultUserMenIcon from '../../../assets/img/Default_Imagen_Men.webp'
 import defaultUserWomenIcon from '../../../assets/img/Default_Imagen_Women.webp'
 import PerfilJugadorModal from '../perfil/[id]';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSession } from '../../../context/SessionProvider';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ListaJugadoresClub = () => {
+  const { user } = useSession();
   const [jugadores, setJugadores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -34,7 +37,14 @@ const ListaJugadoresClub = () => {
       setLoading(false);
     }
   };
+  const hasRole = (...roles) => {
+    return user && user.rol && roles.includes(user.rol.nombre);
+  };
 
+  const canAddPlayers = () => {
+    // Permite a Presidentes de Asociación o Presidentes de Club
+    return hasRole('PresidenteAsociacion') || hasRole('PresidenteClub');
+  };
   const handleProfileClick = (jugadorId) => {
     setJugadorIdPerfil(jugadorId);
     setPerfilJugadorVisible(true);
@@ -72,9 +82,11 @@ const ListaJugadoresClub = () => {
         </TouchableOpacity>
         <Text style={styles.title}>Lista de Jugadores</Text>
       </View>
-      <TouchableOpacity style={styles.addButton} onPress={handleAssignJugador}>
-        <Text style={styles.addButtonText}>Agregar Jugador</Text>
-      </TouchableOpacity>
+      {canAddPlayers() && (
+        <TouchableOpacity style={styles.addButton} onPress={handleAssignJugador}>
+          <Text style={styles.addButtonText}>Agregar Jugador</Text>
+        </TouchableOpacity>
+      )}v
       
       <RegistroJugadorClub isOpen={showFormModal} onClose={handleFormClose} onJugadorCreated={fetchJugadores} club_jugador_id={id} />
       

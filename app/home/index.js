@@ -141,14 +141,15 @@ const Home = () => {
     }
   };
   
-
   const handleVerTabla = () => {
-    navigation.navigate('TablaPosiciones', {
-      categoriaId: selectedCategoria,
-      campeonatoId: selectedCampeonato,
+    navigation.push({
+      pathname: "/tabla_posiciones",
+      params: {
+        campeonatoId: selectedCampeonato,
+        categoriaId: selectedCategoria
+      }
     });
   };
-
   const scrollToTop = () => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({ y: 0, animated: true });

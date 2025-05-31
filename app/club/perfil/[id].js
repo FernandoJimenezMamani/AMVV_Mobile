@@ -27,6 +27,8 @@ import EditarEquipoModal from '../../equipo/editar/[id]';
 import RegistroEquipo from '../../equipo/registrar/[id]';
 import styles from '../../../styles/club/perfil';
 import { useCampeonato } from '../../../context/CampeonatoContext';
+import { useSession } from '../../../context/SessionProvider';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width } = Dimensions.get('window');
 const PerfilClub = () => {
@@ -42,6 +44,7 @@ const PerfilClub = () => {
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
   const { campeonatoEnCurso, campeonatoEnTransaccion, fetchCampeonatos } = useCampeonato();
+  const { user } = useSession();
 
   useEffect(() => {
     fetchCampeonatos(); // siempre se actualiza al entrar
@@ -160,7 +163,17 @@ const PerfilClub = () => {
     if (genero === 'M') return 'Mixto';
     return 'Desconocido';
   };
+  const hasRole = (...roles) => {
+    return user && user.rol && roles.includes(user.rol.nombre);
+  };
 
+  const isClubPresident = () => {
+    return user && user.id === club?.presidente_id;
+  };
+
+  const canEdit = () => {
+    return hasRole('PresidenteAsociacion') || isClubPresident();
+  };
   if (loading) {
     return (
       <View style={styles.loader}>
@@ -191,7 +204,7 @@ const PerfilClub = () => {
       </View>
 
       {/* Información del presidente */}
-      {club.presidente_asignado === 'N' ? (
+      {club.presidente_asignado === 'N' && hasRole('PresidenteAsociacion') ? (
         <TouchableOpacity style={styles.assignButton} onPress={handleAssignPresident}>
           <MaterialIcons name="assignment-ind" size={24} color="white" />
           <Text style={styles.buttonText}>Asignar Presidente</Text>
@@ -208,7 +221,7 @@ const PerfilClub = () => {
           <MaterialIcons name="people" size={24} color="white" />
           <Text style={styles.buttonText}>Mis Jugadores</Text>
         </TouchableOpacity>
-        {campeonatoEnTransaccion && (
+        {campeonatoEnTransaccion && canEdit() && (
         <TouchableOpacity style={styles.actionButton} onPress={handleCreateTeam}>
           <MaterialCommunityIcons name="volleyball" size={24} color="white" />
           <Text style={styles.buttonText}>Crear Equipo</Text>
@@ -249,7 +262,7 @@ const PerfilClub = () => {
                   <Text style={styles.teamDetail}>Género: {getGeneroTexto(team.categoria_genero)}</Text>
                 </View>
 
-                {true && (
+                {canEdit() && (
                   <TouchableOpacity 
                     style={styles.editButton}
                     onPress={() => handleEditTeam(team.equipo_id)}

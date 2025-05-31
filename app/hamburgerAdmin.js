@@ -12,10 +12,9 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
   const segments = useSegments();
   const { user, token, logout } = useSession();
 
-  // Mostrar siempre el menú si está logueado, o si está en la página de inicio
-  const shouldShowMenu = isLoggedIn || segments.length === 0 || segments[0] === 'home';
+    const isLoginPage = segments[segments.length - 1] === 'auth';
 
-  if (!shouldShowMenu) {
+  if (isLoginPage) {
     return <View style={styles.container}>{children}</View>;
   }
 
@@ -39,10 +38,13 @@ const HamburgerMenu = ({ children, isLoggedIn }) => {
     <View style={styles.container}>
       {/* Barra de navegación superior */}
       <View style={styles.navbar}>
-        <View style={styles.logoContainer}>
+       <TouchableOpacity 
+          onPress={() => router.push('/')} 
+          style={styles.logoContainer}
+        >
           <Image source={require('../assets/logo.png')} style={styles.logo} />
           <Text style={styles.brand}>A.M.V.V</Text>
-        </View>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.hamburger} onPress={toggleMenu}>
           <View style={styles.bar} />
