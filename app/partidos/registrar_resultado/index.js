@@ -537,25 +537,69 @@ const SubmitResultados = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Walkover</Text>
             <View style={styles.radioGroup}>
-              {[
-                { value: "L", label: "Local" },
-                { value: "V", label: "Visitante" },
-                { value: "both", label: "Ambos" },
-                { value: "null", label: "Ninguno" },
-              ].map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.radioOption,
-                    walkover === option.value && styles.radioOptionSelected,
-                  ]}
-                  onPress={() => setWalkover(option.value)}
-                >
-                  <Text style={walkover === option.value ? styles.radioTextSelected : styles.radioText}>
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              <TouchableOpacity
+                style={[
+                  styles.radioOption,
+                  walkover === "V" && styles.radioOptionSelected,
+                ]}
+                onPress={() => {
+                  setWalkover("V");
+                  setLocalSets({ set1: 25, set2: 25, set3: 0 });
+                  setVisitanteSets({ set1: 0, set2: 0, set3: 0 });
+                }}
+              >
+                <Text style={walkover === "V" ? styles.radioTextSelected : styles.radioText}>
+                  Equipo A
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.radioOption,
+                  walkover === "L" && styles.radioOptionSelected,
+                ]}
+                onPress={() => {
+                  setWalkover("L");
+                  setLocalSets({ set1: 0, set2: 0, set3: 0 });
+                  setVisitanteSets({ set1: 25, set2: 25, set3: 0 });
+                }}
+              >
+                <Text style={walkover === "L" ? styles.radioTextSelected : styles.radioText}>
+                  Equipo B
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.radioOption,
+                  walkover === "both" && styles.radioOptionSelected,
+                ]}
+                onPress={() => {
+                  setWalkover("both");
+                  setLocalSets({ set1: 0, set2: 0, set3: 0 });
+                  setVisitanteSets({ set1: 0, set2: 0, set3: 0 });
+                }}
+              >
+                <Text style={walkover === "both" ? styles.radioTextSelected : styles.radioText}>
+                  Ambos
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.radioOption,
+                  walkover === "null" && styles.radioOptionSelected,
+                ]}
+                onPress={() => {
+                  setWalkover("null");
+                  setLocalSets({ set1: "", set2: "", set3: "" });
+                  setVisitanteSets({ set1: "", set2: "", set3: "" });
+                }}
+              >
+                <Text style={walkover === "null" ? styles.radioTextSelected : styles.radioText}>
+                  Ninguno
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
