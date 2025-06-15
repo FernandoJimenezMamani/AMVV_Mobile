@@ -319,6 +319,10 @@ const styles = StyleSheet.create({
   acceptButton: {
     backgroundColor: '#28a745',
   },
+  disabledButton: {
+  backgroundColor: '#cccccc',
+  opacity: 0.6,
+},
   liveTittle:{
     marginVertical: 120,
   },

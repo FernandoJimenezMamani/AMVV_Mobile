@@ -99,6 +99,12 @@ const PartidoDetalle = () => {
     }
   };
 
+  const isPartidoDatePassed = () => {
+  if (!partido?.fecha) return false;
+  const partidoDate = new Date(partido.fecha);
+  const now = new Date();
+  return now > partidoDate;
+};
   // Efecto inicial para cargar datos
   useEffect(() => {
     if (!partidoId) {
@@ -372,8 +378,9 @@ const PartidoDetalle = () => {
         {(hasRole(rolMapping.PresidenteAsociacion) ||
           (esArbitroAsignado() && partido.estado !== estadosPartidoCampMapping.Finalizado)) && (
           <TouchableOpacity
-            style={styles.resultButton}
-            onPress={handlePartidoClick}
+            style={[styles.resultButton, !isPartidoDatePassed() && styles.disabledButton]}
+            onPress={isPartidoDatePassed() ? handlePartidoClick : null}
+            disabled={!isPartidoDatePassed()}
           >
             <Text style={styles.buttonText}>
               {partido.estado === estadosPartidoCampMapping.Finalizado 
