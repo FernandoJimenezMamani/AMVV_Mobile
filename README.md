@@ -1,5 +1,15 @@
-#variables de entorno AMVV mobile
-EXPO_PUBLIC_API_URL=http://xxxxx:5002/api
-EXPO_PUBLIC_WEBSOCKET_URL =ws://xxxxxx:5002
-EXPO_PUBLIC_COOKIE_NAME=xxxxxx
-EXPO_PUBLIC_COOKIE_EXPIRATION=3600
+# AMVV Mobile (React Native + Expo)
+
+## 🚨 Importante: Usar Build de Desarrollo
+Para funcionalidades nativas (notificaciones, cámara, GPS) DEBES usar un build precompilado:
+
+## Desarrollo Normal 
+npm install
+npx expo start --dev-client
+
+# Crear build para desarrollo
+npx eas build --profile development --platform android
+
+# Instalar .apk en tu teléfono
+# Luego ejecutar:
+npx expo start --dev-client
