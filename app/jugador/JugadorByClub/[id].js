@@ -86,7 +86,7 @@ const ListaJugadoresClub = () => {
         <TouchableOpacity style={styles.addButton} onPress={handleAssignJugador}>
           <Text style={styles.addButtonText}>Agregar Jugador</Text>
         </TouchableOpacity>
-      )}v
+      )}
       
       <RegistroJugadorClub isOpen={showFormModal} onClose={handleFormClose} onJugadorCreated={fetchJugadores} club_jugador_id={id} />
       
